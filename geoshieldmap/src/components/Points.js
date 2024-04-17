@@ -24,7 +24,7 @@ import React, { useEffect, useState } from 'react';
 import MarkerPoints from './MarkerPoints';
 
 const Points = () => {
-    const [telegramMessages, setTelegramMessages] = useState(null); // Initialize telegramMessages state as null
+    const [jsonData, setJsonData] = useState(null); // Initialize jsonData state as null
 
     useEffect(() => {
         const fetchData = async () => {
@@ -34,11 +34,8 @@ const Points = () => {
                     throw new Error('Failed to fetch data');
                 }
                 const jsonData = await response.json();
-
-                // Extract the telegram_messages array from the fetched JSON data
-                const { telegram_messages } = jsonData;
-
-                setTelegramMessages(telegram_messages);
+                setJsonData(jsonData);
+                console.log(jsonData)
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -49,8 +46,13 @@ const Points = () => {
 
     return (
         <div>
-            {telegramMessages ? (
-                <MarkerPoints jsonData={telegramMessages} />
+            {jsonData ? (
+                <>
+                    {/* Pass each element of jsonData to separate instances of MarkerPoints */}
+                    {jsonData.gdelt_articles && <MarkerPoints jsonData={jsonData.gdelt_articles} icon={"red"}/>}
+                    {jsonData.telegram_messages && <MarkerPoints jsonData={jsonData.telegram_messages} icon={"blue"} />}
+                    {jsonData.matching_messages && <MarkerPoints jsonData={jsonData.matching_messages} icon={"gold"} />}
+                </>
             ) : (
                 <p>Loading...</p>
             )}

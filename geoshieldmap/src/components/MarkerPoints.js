@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Marker, InfoWindow } from '@react-google-maps/api';
 import redIcon from '../assets/circles/red.png';
+import blueIcon from '../assets/circles/blue.png';
+import goldIcon from '../assets/circles/gold.png';
 
 const apiKey = 'AIzaSyDdKQY_n89HWZDY7032fvrra6JrECnFAjU'; // Replace with your Google Maps API key
 
-const MarkerPoints = ({ jsonData }) => {
+const MarkerPoints = ({ jsonData, icon }) => {
     const [markers, setMarkers] = useState([]);
     const [activeMarker, setActiveMarker] = useState(null);
 
@@ -22,7 +24,12 @@ const MarkerPoints = ({ jsonData }) => {
                     const result = data.results[0];
                     const { lat, lng } = result.geometry.location;
 
-                    return { id: item.id, position: { lat, lng }, message: item.message };
+                    return {
+                        id: item.id,
+                        position: { lat, lng },
+                        message: item.message,
+                        type: item.type // Assuming 'type' specifies the data type (gdelt_articles, telegram_messages, matching_messages)
+                    };
                 }
 
                 return null; // Return null if coordinates are not found
@@ -46,14 +53,26 @@ const MarkerPoints = ({ jsonData }) => {
         setActiveMarker(null);
     };
 
+    const getMarkerIcon = (iconString) => {
+        switch (iconString) {
+            case 'gold':
+                return goldIcon;
+            case 'blue':
+                return blueIcon;
+            case 'red':
+            default:
+                return redIcon;
+        }
+    };
+
     return (
         <>
             {markers.map(marker => (
                 <Marker
                     key={marker.id}
                     position={marker.position}
-                    options={{
-                        icon: redIcon,
+                    icon={{
+                        url: getMarkerIcon(icon),
                     }}
                     onClick={() => handleMarkerClick(marker)}
                 />
@@ -65,7 +84,7 @@ const MarkerPoints = ({ jsonData }) => {
                     onCloseClick={handleCloseInfoWindow}
                     options={{
                         pixelOffset: new window.google.maps.Size(0, -24), // Adjust vertical offset to position above marker
-                        anchor: new window.google.maps.Point(0, -24), // Anchor at bottom center of the InfoWindow
+                        anchor: new window.google.maps.Point(0, -24) // Anchor at bottom center of the InfoWindow
                     }}
                 >
                     <div>
