@@ -1,49 +1,41 @@
+
 import React, { useEffect, useState } from 'react';
-import jsonData from '../assets/Data/data.json';
 import MarkerPoints from './MarkerPoints';
 
 const Points = () => {
-    const [data, setData] = useState([]);
+    const [jsonData, setJsonData] = useState(null); // Initialize jsonData state as null
 
     useEffect(() => {
-        // Load JSON data into state
-        setData(jsonData);
-    }, []);
+        const fetchData = async () => {
+            try {
+                const response = await fetch('https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev/get_data?category=security');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                const jsonData = await response.json();
+                setJsonData(jsonData);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
 
-    // Use console.log to output the data
-    // console.log(jsonData[0]);
+        fetchData(); // Call the fetchData function when the component mounts
+    }, []); // Empty dependency array ensures this effect runs only once on mount
 
-    // Return null or an empty fragment since we are only logging data
     return (
         <div>
-            <MarkerPoints jsonData={jsonData} />
+            {jsonData ? (
+                <>
+                    {/* Pass each element of jsonData to separate instances of MarkerPoints */}
+                    {jsonData.gdelt_articles && <MarkerPoints jsonData={jsonData.gdelt_articles} icon={"red"}/>}
+                    {jsonData.telegram_messages && <MarkerPoints jsonData={jsonData.telegram_messages} icon={"blue"} />}
+                    {jsonData.matching_messages && <MarkerPoints jsonData={jsonData.matching_messages} icon={"gold"} />}
+                </>
+            ) : (
+                <p>Loading...</p>
+            )}
         </div>
     );
-}
+};
 
 export default Points;
-
-
-// const apiKey = 'AIzaSyDdKQY_n89HWZDY7032fvrra6JrECnFAjU';
-
-// const getCoordinates = async (locationName) => {
-//     console.log(locationName);
-//     const encodedLocation = encodeURIComponent(locationName);
-//     const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedLocation}&key=${apiKey}`;
-
-//     const response = await fetch(apiUrl);
-//     const data = await response.json();
-
-//     if (data.status === 'OK' && data.results.length > 0) {
-//         const result = data.results[0];
-//         const { lat, lng } = result.geometry.location;
-//         return { lat, lng };
-//     } else {
-//         throw new Error('Location not found');
-//     }
-// };
-
-// // Call the mergeJsons function to merge JSON files and save the result
-
-
-// export default getCoordinates;
