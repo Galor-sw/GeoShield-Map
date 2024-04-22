@@ -23,11 +23,11 @@ const MarkerPoints = ({ jsonData, icon }) => {
                 if (data.status === 'OK' && data.results.length > 0) {
                     const result = data.results[0];
                     const { lat, lng } = result.geometry.location;
-
+                    
                     return {
                         id: item.id,
                         position: { lat, lng },
-                        message: item.message,
+                        message: item.message, // Use item.message by default
                         type: item.type // Assuming 'type' specifies the data type (gdelt_articles, telegram_messages, matching_messages)
                     };
                 }
@@ -65,6 +65,22 @@ const MarkerPoints = ({ jsonData, icon }) => {
         }
     };
 
+    const renderMessage = (item) => {
+        console.log('@@@', item);
+        if (icon === 'gold') {
+            // Return combined messages with a line break if icon is "gold"
+            return (
+                <div>
+                    <p>{item.Telegram_message}</p>
+                    <p>{item.GDELT_message}</p>
+                </div>
+            );
+        } else {
+            // Return regular message
+            return <p>{item.message}</p>;
+        }
+    };
+
     return (
         <>
             {markers.map(marker => (
@@ -75,23 +91,23 @@ const MarkerPoints = ({ jsonData, icon }) => {
                         url: getMarkerIcon(icon),
                     }}
                     onClick={() => handleMarkerClick(marker)}
-                />
-            ))}
-
-            {activeMarker && (
-                <InfoWindow
-                    position={activeMarker.position}
-                    onCloseClick={handleCloseInfoWindow}
-                    options={{
-                        pixelOffset: new window.google.maps.Size(0, -24), // Adjust vertical offset to position above marker
-                        anchor: new window.google.maps.Point(0, -24) // Anchor at bottom center of the InfoWindow
-                    }}
                 >
-                    <div>
-                        <p>{activeMarker.message}</p>
-                    </div>
-                </InfoWindow>
-            )}
+                    {activeMarker === marker && (
+                        <InfoWindow
+                            position={marker.position}
+                            onCloseClick={handleCloseInfoWindow}
+                            options={{
+                                pixelOffset: new window.google.maps.Size(0, -24), // Adjust vertical offset to position above marker
+                                anchor: new window.google.maps.Point(0, -24) // Anchor at bottom center of the InfoWindow
+                            }}
+                        >
+                            <div>
+                                {renderMessage(marker)}
+                            </div>
+                        </InfoWindow>
+                    )}
+                </Marker>
+            ))}
         </>
     );
 };

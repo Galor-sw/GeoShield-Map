@@ -1,24 +1,3 @@
-// import React, { useEffect, useState } from 'react';
-// import jsonData from '../assets/Data/data.json';
-// import MarkerPoints from './MarkerPoints';
-
-// const Points = () => {
-//     const [data, setData] = useState([]);
-
-//     useEffect(() => {
-//         // Load JSON data into state
-//         setData(jsonData);
-//     }, []);
-
-//     return (
-//         <div>
-//             <MarkerPoints jsonData={jsonData} />
-//         </div>
-//     );
-// }
-
-// export default Points;
-
 
 import React, { useEffect, useState } from 'react';
 import MarkerPoints from './MarkerPoints';
@@ -35,7 +14,6 @@ const Points = () => {
                 }
                 const jsonData = await response.json();
                 setJsonData(jsonData);
-                console.log(jsonData)
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
