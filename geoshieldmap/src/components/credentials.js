@@ -1,9 +1,27 @@
-const configObject = {
-    region: "eu-west-1",
-    credentials: {
-        accessKeyId: "AKIAZI2LD2CGWD47VQOM",
-        secretAccessKey: "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",
-    },
+// Function to return AWS credentials (hardcoded)
+const getAWSCredentials = () => {
+    return {
+        region: "",
+        credentials: {
+            accessKeyId: "",
+            secretAccessKey: "",
+        },
+    };
 };
 
-module.exports = { configObject };
+// Function to return Google Maps API key (hardcoded)
+const getGoogleMapsApiKey = () => {
+    return "";
+};
+
+// Function to return hardcoded map ID
+const getMapId = () => {
+    return "";
+};
+
+// Export the functions
+module.exports = {
+    getAWSCredentials,
+    getGoogleMapsApiKey,
+    getMapId,
+};

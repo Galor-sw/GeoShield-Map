@@ -3,8 +3,9 @@ import { Marker, InfoWindow } from '@react-google-maps/api';
 import redIcon from '../assets/circles/red.png';
 import blueIcon from '../assets/circles/blue.png';
 import goldIcon from '../assets/circles/gold.png';
+import { getGoogleMapsApiKey } from './credentials'; 
 
-const apiKey = 'AIzaSyDdKQY_n89HWZDY7032fvrra6JrECnFAjU'; // Replace with your Google Maps API key
+const API_KEY = getGoogleMapsApiKey(); // Replace with your Google Maps API key
 
 const MarkerPoints = ({ jsonData, icon }) => {
     const [markers, setMarkers] = useState([]);
@@ -16,7 +17,7 @@ const MarkerPoints = ({ jsonData, icon }) => {
                 const location = item.location;
 
                 // Fetch coordinates for location using Google Maps Geocoding API
-                const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${apiKey}`;
+                const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${API_KEY}`;
                 const response = await fetch(apiUrl);
                 const data = await response.json();
 
