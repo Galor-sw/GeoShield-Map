@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useJsApiLoader, GoogleMap } from '@react-google-maps/api';
 import Points from './Points';
 import IntervalHandler from './IntervalHandler'; // Import the IntervalHandler component
+import { getGoogleMapsApiKey } from './credentials'; 
 
 const GoogleMapFunction = () => {
-    const API_KEY = "AIzaSyDdKQY_n89HWZDY7032fvrra6JrECnFAjU"; // Replace with your Google Maps API key
+    const API_KEY = getGoogleMapsApiKey(); // Replace with your Google Maps API key
+    console.log(API_KEY)
     const [listening, setListening] = useState(false);
     const [successReceived, setSuccessReceived] = useState(false);
     const [apiResponse, setApiResponse] = useState(null);

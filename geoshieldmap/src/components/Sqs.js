@@ -1,7 +1,14 @@
-import { configObject } from "./credentials";
+import { getAWSCredentials } from "./credentials"; // Import the getAWSCredentials function
+
 import { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } from '@aws-sdk/client-sqs';
 
-const sqsClient = new SQSClient(configObject);
+const awsCredentials = getAWSCredentials(); // Retrieve AWS credentials from credentials.js
+
+const sqsClient = new SQSClient({
+    region: awsCredentials.region,
+    credentials: awsCredentials.credentials,
+});
+
 const queueUrl = 'https://sqs.eu-west-1.amazonaws.com/637423308941/api_queue';
 let intervalId = null; // Store interval ID
 let isListening = false; // Flag to control the SQS listener
