@@ -77,8 +77,6 @@ const MarkerPoints = ({ jsonData, icon }) => {
                     <p className="mb-2">{Telegram_message}</p>
                     <p className="text-lg font-bold mb-2">GDELT Message:</p>
                     <p className="mb-2">{GDELT_message}</p>
-                    <p className="text-lg font-bold mb-2">Date:</p>
-                    <p>{date}</p>
                 </div>
             );
         } else {
@@ -110,7 +108,7 @@ const MarkerPoints = ({ jsonData, icon }) => {
                             position={marker.position}
                             onCloseClick={handleCloseInfoWindow}
                         >
-                            <div className="p-2">
+                            <div className="">
                                 {renderMessage(marker.message)}
                             </div>
                         </InfoWindow>
