@@ -6,7 +6,6 @@ import { getGoogleMapsApiKey } from './credentials';
 
 const GoogleMapFunction = () => {
     const API_KEY = getGoogleMapsApiKey(); // Replace with your Google Maps API key
-    console.log(API_KEY)
     const [listening, setListening] = useState(false);
     const [successReceived, setSuccessReceived] = useState(false);
     const [apiResponse, setApiResponse] = useState(null);
