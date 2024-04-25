@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Marker, InfoWindow } from '@react-google-maps/api';
 import redIcon from '../assets/circles/red.png';
 import blueIcon from '../assets/circles/blue.png';
@@ -10,13 +10,13 @@ const API_KEY = getGoogleMapsApiKey(); // Replace with your Google Maps API key
 const MarkerPoints = ({ jsonData, icon }) => {
     const [markers, setMarkers] = useState([]);
     const [activeMarker, setActiveMarker] = useState(null);
+    const infoWindowRef = useRef(null);
 
     useEffect(() => {
         const fetchCoordinates = async () => {
             const promises = jsonData.map(async (item) => {
                 const location = item.location;
 
-                // Fetch coordinates for location using Google Maps Geocoding API
                 const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${API_KEY}`;
                 const response = await fetch(apiUrl);
                 const data = await response.json();
@@ -26,17 +26,16 @@ const MarkerPoints = ({ jsonData, icon }) => {
                     const { lat, lng } = result.geometry.location;
 
                     return {
-                        id: item.Telegram_id, // Use Telegram_id as the marker id
+                        id: item.Telegram_id,
                         position: { lat, lng },
-                        message: item, // Pass the entire item object as message
-                        type: item.type // Assuming 'type' specifies the data type (gdelt_articles, telegram_messages, matching_messages)
+                        message: item,
+                        type: item.type
                     };
                 }
 
-                return null; // Return null if coordinates are not found
+                return null;
             });
 
-            // Wait for all promises to resolve and filter out null results
             const resolvedMarkers = await Promise.all(promises);
             setMarkers(resolvedMarkers.filter(marker => marker !== null));
         };
@@ -44,7 +43,7 @@ const MarkerPoints = ({ jsonData, icon }) => {
         if (jsonData.length > 0) {
             fetchCoordinates();
         }
-    }, [jsonData]); // Run fetchCoordinates whenever jsonData changes
+    }, [jsonData]);
 
     const handleMarkerClick = (marker) => {
         setActiveMarker(marker);
@@ -66,23 +65,36 @@ const MarkerPoints = ({ jsonData, icon }) => {
         }
     };
 
+    const handleOutsideClick = (event) => {
+        // Check if the click is outside the InfoWindow
+        if (infoWindowRef.current && !infoWindowRef.current.contains(event.target)) {
+            setActiveMarker(null); // Close the InfoWindow
+        }
+    };
+
+    useEffect(() => {
+        // Add event listener to handle clicks outside the InfoWindow
+        document.addEventListener('mousedown', handleOutsideClick);
+
+        return () => {
+            // Clean up event listener when component unmounts
+            document.removeEventListener('mousedown', handleOutsideClick);
+        };
+    }, []);
+
     const renderMessage = (item) => {
         const { Telegram_message, GDELT_message, event_breakdown, date } = item;
 
         if (icon === 'gold') {
-            // Render Telegram_message, GDELT_message, and date together for "gold" icon
             return (
                 <div>
                     <p className="text-lg font-bold mb-2">Telegram Message:</p>
                     <p className="mb-2">{Telegram_message}</p>
                     <p className="text-lg font-bold mb-2">GDELT Message:</p>
                     <p className="mb-2">{GDELT_message}</p>
-                    <p className="text-lg font-bold mb-2">Date:</p>
-                    <p>{date}</p>
                 </div>
             );
         } else {
-            // Render event_breakdown and date for other icons
             return (
                 <div>
                     <p className="text-lg font-bold mb-2">Event Breakdown:</p>
@@ -110,7 +122,7 @@ const MarkerPoints = ({ jsonData, icon }) => {
                             position={marker.position}
                             onCloseClick={handleCloseInfoWindow}
                         >
-                            <div className="p-2">
+                            <div ref={infoWindowRef}>
                                 {renderMessage(marker.message)}
                             </div>
                         </InfoWindow>
