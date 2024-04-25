@@ -24,3 +24,5 @@ yarn-error.log*
 
 # Exclude credentials file
 src/components/credentials.js
+geoshieldmap/src/components/credentials.js
+geoshieldmap/src/components/credentials

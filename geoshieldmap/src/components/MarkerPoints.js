@@ -3,7 +3,7 @@ import { Marker, InfoWindow } from '@react-google-maps/api';
 import redIcon from '../assets/circles/red.png';
 import blueIcon from '../assets/circles/blue.png';
 import goldIcon from '../assets/circles/gold.png';
-import { getGoogleMapsApiKey } from './credentials'; 
+import { getGoogleMapsApiKey } from './credentials';
 
 const API_KEY = getGoogleMapsApiKey(); // Replace with your Google Maps API key
 
@@ -24,11 +24,11 @@ const MarkerPoints = ({ jsonData, icon }) => {
                 if (data.status === 'OK' && data.results.length > 0) {
                     const result = data.results[0];
                     const { lat, lng } = result.geometry.location;
-                    
+
                     return {
-                        id: item.id,
+                        id: item.Telegram_id, // Use Telegram_id as the marker id
                         position: { lat, lng },
-                        message: item.message, // Use item.message by default
+                        message: item, // Pass the entire item object as message
                         type: item.type // Assuming 'type' specifies the data type (gdelt_articles, telegram_messages, matching_messages)
                     };
                 }
@@ -67,18 +67,30 @@ const MarkerPoints = ({ jsonData, icon }) => {
     };
 
     const renderMessage = (item) => {
-        console.log('@@@', item);
+        const { Telegram_message, GDELT_message, event_breakdown, date } = item;
+
         if (icon === 'gold') {
-            // Return combined messages with a line break if icon is "gold"
+            // Render Telegram_message, GDELT_message, and date together for "gold" icon
             return (
                 <div>
-                    <p>{item.Telegram_message}</p>
-                    <p>{item.GDELT_message}</p>
+                    <p className="text-lg font-bold mb-2">Telegram Message:</p>
+                    <p className="mb-2">{Telegram_message}</p>
+                    <p className="text-lg font-bold mb-2">GDELT Message:</p>
+                    <p className="mb-2">{GDELT_message}</p>
+                    <p className="text-lg font-bold mb-2">Date:</p>
+                    <p>{date}</p>
                 </div>
             );
         } else {
-            // Return regular message
-            return <p>{item.message}</p>;
+            // Render event_breakdown and date for other icons
+            return (
+                <div>
+                    <p className="text-lg font-bold mb-2">Event Breakdown:</p>
+                    <p className="mb-2">{event_breakdown}</p>
+                    <p className="text-lg font-bold mb-2">Date:</p>
+                    <p>{date}</p>
+                </div>
+            );
         }
     };
 
@@ -97,13 +109,9 @@ const MarkerPoints = ({ jsonData, icon }) => {
                         <InfoWindow
                             position={marker.position}
                             onCloseClick={handleCloseInfoWindow}
-                            options={{
-                                pixelOffset: new window.google.maps.Size(0, -24), // Adjust vertical offset to position above marker
-                                anchor: new window.google.maps.Point(0, -24) // Anchor at bottom center of the InfoWindow
-                            }}
                         >
-                            <div>
-                                {renderMessage(marker)}
+                            <div className="p-2">
+                                {renderMessage(marker.message)}
                             </div>
                         </InfoWindow>
                     )}
