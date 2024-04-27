@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
 import { useJsApiLoader, GoogleMap } from '@react-google-maps/api';
 import Points from './Points';
-import IntervalHandler from './IntervalHandler'; // Import the IntervalHandler component
+import IntervalHandler from './IntervalHandler';
 import { getGoogleMapsApiKey, getMapId } from './credentials';
+import MapHeader from './MapHeader';
 
 const GoogleMapFunction = () => {
-    const API_KEY = getGoogleMapsApiKey(); // Replace with your Google Maps API key
+    const API_KEY = getGoogleMapsApiKey();
     const mapId = getMapId();
     const [listening, setListening] = useState(false);
     const [successReceived, setSuccessReceived] = useState(false);
     const [apiResponse, setApiResponse] = useState(null);
-    const [selectedCategory, setSelectedCategory] = useState('security'); // Default category selection
+    const [selectedCategory, setSelectedCategory] = useState('security');
+    const [pointsVisible, setPointsVisible] = useState(false); // Track Points visibility
+
+    const handleCategoryChange = (e) => {
+        setSelectedCategory(e.target.value);
+    };
 
     const handleFetchData = async () => {
         try {
@@ -18,15 +24,15 @@ const GoogleMapFunction = () => {
             const data = await response.json();
             console.log('API Response:', data);
             setApiResponse(data);
-            setListening(true); // Start listening to SQS after API call
-
+            setListening(true);
         } catch (error) {
             console.error('Error fetching data:', error);
         }
     };
 
     const handleSuccessReceived = () => {
-        setSuccessReceived(true); // Enable <Points /> component upon receiving success message
+        setSuccessReceived(true);
+        setPointsVisible(true); // Set Points visibility to true when received success
     };
 
     const { isLoaded } = useJsApiLoader({
@@ -34,29 +40,17 @@ const GoogleMapFunction = () => {
     });
 
     if (!isLoaded) {
-        return <div className='h-72 w-72 bg-red'>Loading...</div>; // Render a loading state until the Google Maps API is loaded
+        return <div className='h-72 w-72 bg-red'>Loading...</div>;
     }
 
     return (
         <>
-            <div className="fixed top-0 left-0 right-0 bg-[#464444] flex items-center justify-center p-4 border-b border-black z-10">
-                {/* Category selection dropdown */}
-                <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="bg-white border rounded-md px-4 py-2 mr-4"
-                >
-                    <option value="security">Security</option>
-                    <option value="world">World</option>
-                    <option value="entertainment">Entertainment</option>
-                </select>
-                <button
-                    onClick={handleFetchData}
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                >
-                    Collect Data
-                </button>
-            </div>
+            <MapHeader
+                selectedCategory={selectedCategory}
+                handleCategoryChange={handleCategoryChange}
+                handleFetchData={handleFetchData}
+                pointsVisible={pointsVisible} // Pass pointsVisible prop to MapHeader
+            />
             <div style={{ position: 'relative', width: '100%', height: 'calc(100vh - 56px)' }}>
                 <GoogleMap
                     center={{ lat: 32.07467, lng: 34.78154 }}
@@ -68,11 +62,11 @@ const GoogleMapFunction = () => {
                         mapTypeControl: false,
                     }}
                 >
-                    {successReceived && <Points jsonData={apiResponse} />} {/* Render <Points /> when successReceived is true */}
+                    {successReceived && <Points jsonData={apiResponse} />}
                 </GoogleMap>
                 {listening && (
                     <IntervalHandler onSuccessReceived={handleSuccessReceived} />
-                )} {/* Start interval handler when listening is true */}
+                )}
             </div>
         </>
     );
