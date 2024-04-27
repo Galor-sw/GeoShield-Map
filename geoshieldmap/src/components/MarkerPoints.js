@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Marker, InfoWindow } from '@react-google-maps/api';
-import redIcon from '../assets/circles/red.png';
-import blueIcon from '../assets/circles/blue.png';
-import goldIcon from '../assets/circles/gold.png';
+import redIcon from '../assets/icons/red.png';
+import blueIcon from '../assets/icons/blue.png';
+import goldIcon from '../assets/icons/gold.png';
 import { getGoogleMapsApiKey } from './credentials';
 
 const API_KEY = getGoogleMapsApiKey(); // Replace with your Google Maps API key
