@@ -10,6 +10,7 @@ const API_KEY = getGoogleMapsApiKey(); // Replace with your Google Maps API key
 const MarkerPoints = ({ jsonData, icon }) => {
     const [markers, setMarkers] = useState([]);
     const [activeMarker, setActiveMarker] = useState(null);
+    const [showDetails, setShowDetails] = useState(false);
     const infoWindowRef = useRef(null);
 
     useEffect(() => {
@@ -47,10 +48,16 @@ const MarkerPoints = ({ jsonData, icon }) => {
 
     const handleMarkerClick = (marker) => {
         setActiveMarker(marker);
+        setShowDetails(false);
     };
 
     const handleCloseInfoWindow = () => {
         setActiveMarker(null);
+
+    };
+
+    const toggleDetails = () => {
+        setShowDetails(!showDetails);
     };
 
     const getMarkerIcon = (iconString) => {
@@ -83,7 +90,7 @@ const MarkerPoints = ({ jsonData, icon }) => {
     }, []);
 
     const renderMessage = (item) => {
-        const { Telegram_message, GDELT_message, event_breakdown, date } = item;
+        const { Telegram_message, GDELT_message, event_breakdown, date, title, message, url } = item;
 
         if (icon === 'gold') {
             return (
@@ -95,14 +102,38 @@ const MarkerPoints = ({ jsonData, icon }) => {
                 </div>
             );
         } else {
-            return (
-                <div>
-                    <p className="text-lg font-bold mb-2">Event Breakdown:</p>
-                    <p className="mb-2">{event_breakdown}</p>
-                    <p className="text-lg font-bold mb-2">Date:</p>
-                    <p>{date}</p>
-                </div>
-            );
+            if (showDetails) {
+                return (
+                    <div>
+                        <p className="text-lg font-bold mb-2">{title}</p>
+                        <p className="mb-2">{message}</p>
+                        {url && (
+                            <p>
+                                <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 font-bold">Link</a>
+                            </p>
+                        )}
+                        <p className="text-gray-500 mb-2">{date}</p>
+                        <div className="text-center">
+                            <button className="text-blue-500" onClick={toggleDetails}>Read Less...</button>
+                        </div>
+                    </div>
+                );
+            } else {
+                // Split event_breakdown string by newline character '\n' and map each part to a paragraph
+                const breakdownParts = event_breakdown.split('\n');
+                const breakdownParagraphs = breakdownParts.map((part, index) => (
+                    <p key={index} className="mb-2">{part}</p>
+                ));
+                return (
+                    <div>
+                        <p className="mb-2">{breakdownParagraphs}</p>
+                        <p className="text-gray-500 mb-2">{date}</p>
+                        <div className="text-center">
+                            <button className="text-blue-500" onClick={toggleDetails}>Read More...</button>
+                        </div>
+                    </div>
+                );
+            }
         }
     };
 
