@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import blueIcon from '../assets/icons/blue.png';
 import redIcon from '../assets/icons/red.png';
 import goldIcon from '../assets/icons/gold.png';
@@ -6,13 +6,28 @@ import infoIcon from '../assets/icons/info.png'; // Import the infoIcon
 
 const IconExplain = () => {
     const [showExplanation, setShowExplanation] = useState(false);
+    const explanationRef = useRef(null);
 
     const toggleExplanation = () => {
         setShowExplanation(!showExplanation);
     };
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (explanationRef.current && !explanationRef.current.contains(event.target)) {
+                setShowExplanation(false);
+            }
+        };
+
+        document.body.addEventListener('click', handleClickOutside);
+
+        return () => {
+            document.body.removeEventListener('click', handleClickOutside);
+        };
+    }, []);
+
     return (
-        <div className="flex items-center h-full relative">
+        <div className="flex items-center h-full relative" ref={explanationRef}>
             {/* Button to toggle icon explanation visibility */}
             <button onClick={toggleExplanation} className="text-white ml-4 focus:outline-none">
                 <img src={infoIcon} alt="Info" className="w-8 h-8" /> {/* Use the infoIcon here */}
