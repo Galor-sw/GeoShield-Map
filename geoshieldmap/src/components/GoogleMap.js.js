@@ -13,12 +13,17 @@ const GoogleMapFunction = () => {
     const [apiResponse, setApiResponse] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState('security');
     const [pointsVisible, setPointsVisible] = useState(false); // Track Points visibility
+    const [startDate, setStartDate] = useState(""); // Initialize startDate state
+    const [endDate, setEndDate] = useState(""); // Initialize endDate state
+
 
     const handleCategoryChange = (e) => {
         setSelectedCategory(e.target.value);
     };
 
     const handleFetchData = async () => {
+        console.log(startDate);
+        console.log(endDate);
         try {
             const response = await fetch(`https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev/collect_data?category=${selectedCategory}`);
             const data = await response.json();
@@ -50,6 +55,8 @@ const GoogleMapFunction = () => {
                 handleCategoryChange={handleCategoryChange}
                 handleFetchData={handleFetchData}
                 pointsVisible={pointsVisible} // Pass pointsVisible prop to MapHeader
+                setStartDate={setStartDate}
+                setEndDate={setEndDate}
             />
             <div style={{ position: 'relative', width: '100%', height: 'calc(100vh - 56px)' }}>
                 <GoogleMap
@@ -62,7 +69,7 @@ const GoogleMapFunction = () => {
                         mapTypeControl: false,
                     }}
                 >
-                    {successReceived && <Points jsonData={apiResponse} />}
+                    {successReceived && <Points jsonData={apiResponse} startDate={startDate} endDate={endDate} />}
                 </GoogleMap>
                 {listening && (
                     <IntervalHandler onSuccessReceived={handleSuccessReceived} />
