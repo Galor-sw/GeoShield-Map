@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import MarkerPoints from './MarkerPoints';
 
-const Points = ({ startDate, endDate }) => { // Accept startDate and endDate props
+const Points = ({ category, startDate, endDate }) => { // Accept startDate and endDate props
     const [jsonData, setJsonData] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
+            console.log(`https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev/get_data?category=${category}&start_date=${startDate}&end_date=${endDate}`);
             try {
-                const response = await fetch(`https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev/get_data?category=security&start_date=${startDate}&end_date=${endDate}`);
+                const response = await fetch(`https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev/get_data?category=${category}&start_date=${startDate}&end_date=${endDate}`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch data');
                 }
@@ -30,7 +31,7 @@ const Points = ({ startDate, endDate }) => { // Accept startDate and endDate pro
                     {jsonData.matching_messages && <MarkerPoints jsonData={jsonData.matching_messages} icon="gold" />}
                 </>
             ) : (
-                <p>Loading...</p>
+                <p>Loading....</p>
             )}
         </div>
     );

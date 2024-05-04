@@ -9,7 +9,7 @@ const MapHeader = ({ selectedCategory, handleCategoryChange, handleFetchData, po
     const handleStartDateChange = (e) => {
         const newStartDate = e.target.value;
         setSelectedStartDate(newStartDate);
-        if (selectedEndDate < newStartDate) {
+        if (selectedEndDate && selectedEndDate < newStartDate) {
             setEndDate('');
             setEndDateError(true); // Set end date error if end date is earlier than start date
         } else {
@@ -25,7 +25,7 @@ const MapHeader = ({ selectedCategory, handleCategoryChange, handleFetchData, po
             setEndDateError(true); // Set end date error to true if end date is earlier than start date
             setEndDate('');
         } else {
-            setEndDate(selectedEndDate);
+            setEndDate(newEndDate);
             setEndDateError(false); // Reset end date error if end date is valid
         }
     };
@@ -75,9 +75,9 @@ const MapHeader = ({ selectedCategory, handleCategoryChange, handleFetchData, po
                 >
                     Collect Data
                 </button>
+            {pointsVisible && <IconExplain />}
             </div>
             {/* Render IconExplain component if points are visible */}
-            {pointsVisible && <IconExplain />}
             {/* Display error message if end date error exists */}
             {endDateError && <p className="text-white bg-red-600 text-center rounded-md py-1 px-2 mt-2">End date cannot be earlier than start date</p>}
         </div>

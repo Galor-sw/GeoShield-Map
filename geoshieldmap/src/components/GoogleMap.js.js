@@ -22,8 +22,6 @@ const GoogleMapFunction = () => {
     };
 
     const handleFetchData = async () => {
-        console.log(startDate);
-        console.log(endDate);
         try {
             const response = await fetch(`https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev/collect_data?category=${selectedCategory}`);
             const data = await response.json();
@@ -69,7 +67,7 @@ const GoogleMapFunction = () => {
                         mapTypeControl: false,
                     }}
                 >
-                    {successReceived && <Points jsonData={apiResponse} startDate={startDate} endDate={endDate} />}
+                    {successReceived && <Points jsonData={apiResponse} startDate={startDate} endDate={endDate} category={selectedCategory}/>}
                 </GoogleMap>
                 {listening && (
                     <IntervalHandler onSuccessReceived={handleSuccessReceived} />
