@@ -1,42 +1,27 @@
 import React, { useState } from 'react';
 import { useJsApiLoader, GoogleMap } from '@react-google-maps/api';
 import Points from './Points';
-import IntervalHandler from './IntervalHandler';
 import { getGoogleMapsApiKey, getMapId } from './credentials';
 import MapHeader from './MapHeader';
 
 const GoogleMapFunction = () => {
     const API_KEY = getGoogleMapsApiKey();
     const mapId = getMapId();
-    const [listening, setListening] = useState(false);
-    const [successReceived, setSuccessReceived] = useState(false);
-    const [apiResponse, setApiResponse] = useState(null);
+    const [getData, setGetData] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('security');
     const [pointsVisible, setPointsVisible] = useState(false); // Track Points visibility
     const [startDate, setStartDate] = useState(""); // Initialize startDate state
     const [endDate, setEndDate] = useState(""); // Initialize endDate state
 
+    const handleSetData = (e) => {
+        setGetData(true);
+        setPointsVisible(true);
+    }
 
     const handleCategoryChange = (e) => {
         setSelectedCategory(e.target.value);
     };
 
-    const handleFetchData = async () => {
-        try {
-            const response = await fetch(`https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev/collect_data?category=${selectedCategory}`);
-            const data = await response.json();
-            console.log('API Response:', data);
-            setApiResponse(data);
-            setListening(true);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
-
-    const handleSuccessReceived = () => {
-        setSuccessReceived(true);
-        setPointsVisible(true); // Set Points visibility to true when received success
-    };
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: API_KEY,
@@ -51,7 +36,8 @@ const GoogleMapFunction = () => {
             <MapHeader
                 selectedCategory={selectedCategory}
                 handleCategoryChange={handleCategoryChange}
-                handleFetchData={handleFetchData}
+                handleSetData={handleSetData}
+                setGetData={setGetData}
                 pointsVisible={pointsVisible} // Pass pointsVisible prop to MapHeader
                 setStartDate={setStartDate}
                 setEndDate={setEndDate}
@@ -67,11 +53,11 @@ const GoogleMapFunction = () => {
                         mapTypeControl: false,
                     }}
                 >
-                    {successReceived && <Points jsonData={apiResponse} startDate={startDate} endDate={endDate} category={selectedCategory}/>}
+                    {getData && <Points startDate={startDate} endDate={endDate} category={selectedCategory}/>}
                 </GoogleMap>
-                {listening && (
+                {/* {listening && (
                     <IntervalHandler onSuccessReceived={handleSuccessReceived} />
-                )}
+                )} */}
             </div>
         </>
     );

@@ -18,7 +18,7 @@ const Points = ({ category, startDate, endDate }) => { // Accept startDate and e
                 console.error('Error fetching data:', error);
             }
         };
-
+        console.log(jsonData);
         fetchData();
     }, [startDate, endDate]); // Add startDate and endDate to the dependency array
 
