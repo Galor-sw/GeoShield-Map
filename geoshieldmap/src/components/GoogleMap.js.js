@@ -13,6 +13,9 @@ const GoogleMapFunction = () => {
     const [apiResponse, setApiResponse] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState('security');
     const [pointsVisible, setPointsVisible] = useState(false); // Track Points visibility
+    const [startDate, setStartDate] = useState(""); // Initialize startDate state
+    const [endDate, setEndDate] = useState(""); // Initialize endDate state
+
 
     const handleCategoryChange = (e) => {
         setSelectedCategory(e.target.value);
@@ -50,6 +53,8 @@ const GoogleMapFunction = () => {
                 handleCategoryChange={handleCategoryChange}
                 handleFetchData={handleFetchData}
                 pointsVisible={pointsVisible} // Pass pointsVisible prop to MapHeader
+                setStartDate={setStartDate}
+                setEndDate={setEndDate}
             />
             <div style={{ position: 'relative', width: '100%', height: 'calc(100vh - 56px)' }}>
                 <GoogleMap
@@ -62,7 +67,7 @@ const GoogleMapFunction = () => {
                         mapTypeControl: false,
                     }}
                 >
-                    {successReceived && <Points jsonData={apiResponse} />}
+                    {successReceived && <Points jsonData={apiResponse} startDate={startDate} endDate={endDate} category={selectedCategory}/>}
                 </GoogleMap>
                 {listening && (
                     <IntervalHandler onSuccessReceived={handleSuccessReceived} />
