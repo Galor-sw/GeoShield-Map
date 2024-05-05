@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import IconExplain from './IconExplain';
 
-const MapHeader = ({ selectedCategory, handleCategoryChange, handleFetchData, pointsVisible, startDate, endDate, setStartDate, setEndDate }) => {
+const MapHeader = ({ selectedCategory, handleSetData, handleCategoryChange, setGetData, pointsVisible, startDate, endDate, setStartDate, setEndDate }) => {
     const [endDateError, setEndDateError] = useState(false); // State to track end date error
     const [selectedStartDate, setSelectedStartDate] = useState("");
     const [selectedEndDate, setSelectedEndDate] = useState("");
@@ -27,13 +27,6 @@ const MapHeader = ({ selectedCategory, handleCategoryChange, handleFetchData, po
         } else {
             setEndDate(newEndDate);
             setEndDateError(false); // Reset end date error if end date is valid
-        }
-    };
-
-    const handleFetchDataClick = () => {
-        // Check if end date error exists before fetching data
-        if (!endDateError) {
-            handleFetchData();
         }
     };
 
@@ -69,16 +62,14 @@ const MapHeader = ({ selectedCategory, handleCategoryChange, handleFetchData, po
                     style={{ height: '2.5rem' }} // Set fixed height
                 />
                 <button
-                    onClick={handleFetchDataClick} // Use a click handler that checks for end date error
+                    onClick={handleSetData} // Use a click handler that checks for end date error
                     className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${endDateError ? 'cursor-not-allowed opacity-50' : ''}`}
                     disabled={endDateError} // Disable the button if end date error exists
                 >
-                    Collect Data
+                    Get Data
                 </button>
             {pointsVisible && <IconExplain />}
             </div>
-            {/* Render IconExplain component if points are visible */}
-            {/* Display error message if end date error exists */}
             {endDateError && <p className="text-white bg-red-600 text-center rounded-md py-1 px-2 mt-2">End date cannot be earlier than start date</p>}
         </div>
     );
