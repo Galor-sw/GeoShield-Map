@@ -41,8 +41,8 @@ const MapHeader = ({ selectedCategory, handleSetData, handleCategoryChange, setG
                     style={{ height: '2.5rem' }} // Set fixed height
                 >
                     <option value="security">Security</option>
-                    <option value="world">World</option>
-                    <option value="entertainment">Entertainment</option>
+                    <option value="antisemitism">Antisemitism</option>
+                    <option value="natural-disasters">Natural-Disasters</option>
                 </select>
                 {/* Start date input field */}
                 <input
