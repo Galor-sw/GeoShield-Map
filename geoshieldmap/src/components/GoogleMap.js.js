@@ -3,15 +3,24 @@ import { useJsApiLoader, GoogleMap } from '@react-google-maps/api';
 import Points from './Points';
 import { getGoogleMapsApiKey, getMapId } from './credentials';
 import MapHeader from './MapHeader';
+import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
+import gpsIcon from '../assets/icons/gps.png'; // Import the GPS icon
 
 const GoogleMapFunction = () => {
     const API_KEY = getGoogleMapsApiKey();
     const mapId = getMapId();
     const [getData, setGetData] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('security');
-    const [pointsVisible, setPointsVisible] = useState(false); // Track Points visibility
-    const [startDate, setStartDate] = useState(""); // Initialize startDate state
-    const [endDate, setEndDate] = useState(""); // Initialize endDate state
+    const [pointsVisible, setPointsVisible] = useState(false);
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+    const [map, setMap] = useState(null);
+    const [searchVisible, setSearchVisible] = useState(false);
+
+    const { isLoaded } = useJsApiLoader({
+        googleMapsApiKey: API_KEY,
+        libraries: ['places'],
+    });
 
     const handleSetData = (e) => {
         setGetData(true);
@@ -22,10 +31,16 @@ const GoogleMapFunction = () => {
         setSelectedCategory(e.target.value);
     };
 
+    const onMapLoad = mapInstance => {
+        setMap(mapInstance);
+    };
 
-    const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: API_KEY,
-    });
+    const handlePlaceSelect = async (address) => {
+        const results = await getGeocode({ address });
+        const { lat, lng } = await getLatLng(results[0]);
+        map.panTo({ lat, lng });
+        map.setZoom(6); // Adjust the zoom level here to ensure the entire country is visible
+    };
 
     if (!isLoaded) {
         return <div className='h-72 w-72 bg-red'>Loading...</div>;
@@ -38,7 +53,7 @@ const GoogleMapFunction = () => {
                 handleCategoryChange={handleCategoryChange}
                 handleSetData={handleSetData}
                 setGetData={setGetData}
-                pointsVisible={pointsVisible} // Pass pointsVisible prop to MapHeader
+                pointsVisible={pointsVisible}
                 setStartDate={setStartDate}
                 setEndDate={setEndDate}
             />
@@ -52,14 +67,121 @@ const GoogleMapFunction = () => {
                         streetViewControl: false,
                         mapTypeControl: false,
                     }}
+                    onLoad={onMapLoad}
                 >
-                    {getData && <Points startDate={startDate} endDate={endDate} category={selectedCategory}/>}
+                    {getData && <Points startDate={startDate} endDate={endDate} category={selectedCategory} />}
                 </GoogleMap>
-                {/* {listening && (
-                    <IntervalHandler onSuccessReceived={handleSuccessReceived} />
-                )} */}
+                {searchVisible && <FloatingSearchBar onPlaceSelect={handlePlaceSelect} />}
+                <button
+                    onClick={() => setSearchVisible(!searchVisible)}
+                    style={{
+                        position: 'absolute',
+                        bottom: 30,
+                        left: 20,
+                        zIndex: 1000,
+                        width: '40px',
+                        height: '40px',
+                        backgroundColor: '#fff',
+                        border: '1px solid #ccc',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+                    }}
+                >
+                    <img src={gpsIcon} alt="Search Location" style={{ width: '70%', height: '70%' }} />
+                </button>
             </div>
         </>
+    );
+};
+
+const FloatingSearchBar = ({ onPlaceSelect }) => {
+    const {
+        ready,
+        value,
+        suggestions: { status, data },
+        setValue,
+        clearSuggestions,
+    } = usePlacesAutocomplete({
+        requestOptions: {
+            /* Define search scope here */
+        },
+        debounce: 300,
+    });
+
+    const handleInput = (e) => {
+        setValue(e.target.value);
+    };
+
+    const handleSelect = async (address) => {
+        setValue(address, false);
+        clearSuggestions();
+        onPlaceSelect(address);
+    };
+
+    const containerStyle = {
+        position: 'absolute',
+        top: 50,
+        left: 10,
+        zIndex: 1000,
+        width: '300px',
+        padding: '10px',
+        fontSize: '16px',
+    };
+
+    const dropdownContainerStyle = {
+        backgroundColor: 'white',
+        borderRadius: '4px',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+        marginTop: '2px',
+        zIndex: 1001,
+        position: 'absolute',
+        width: '300px',
+    };
+
+    const suggestionStyle = {
+        padding: '10px',
+        cursor: 'pointer',
+        borderBottom: '1px solid #eee',
+    };
+
+    const suggestionHoverStyle = {
+        backgroundColor: '#f1f1f1',
+    };
+
+    return (
+        <div style={containerStyle}>
+            <input
+                value={value}
+                onChange={handleInput}
+                disabled={!ready}
+                placeholder="Search location"
+                style={{
+                    width: '100%',
+                    padding: '10px',
+                    fontSize: '16px',
+                    marginTop: '30px'
+                }}
+            />
+            {status === 'OK' && (
+                <div style={dropdownContainerStyle}>
+                    {data.map(({ place_id, description }) => (
+                        <div
+                            key={place_id}
+                            onClick={() => handleSelect(description)}
+                            style={suggestionStyle}
+                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = suggestionHoverStyle.backgroundColor)}
+                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '')}
+                        >
+                            {description}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
     );
 };
 
