@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import IconExplain from './IconExplain';
+import IntervalHandler from './IntervalHandler'; // Import the IntervalHandler component
 
 const channelsData = {
     "GDELT_Domains": {
@@ -15,7 +16,7 @@ const channelsData = {
 
 const MapHeader = ({
     selectedCategory, handleSetData, handleCategoryChange, setGetData,
-    pointsVisible, startDate, endDate, setStartDate, setEndDate
+    pointsVisible, startDate, endDate, setStartDate, setEndDate ,setCustomDataUUID 
 }) => {
     const [endDateError, setEndDateError] = useState(false);
     const [selectedStartDate, setSelectedStartDate] = useState("");
@@ -27,7 +28,14 @@ const MapHeader = ({
     });
     const [loading, setLoading] = useState(false); // State for loading
     const [customDataRequested, setCustomDataRequested] = useState(false); // State for custom data requested
+    const [startListening, setStartListening] = useState(false); // State for SQS listening
+    const [uuid, setUuid] = useState(null); 
 
+    const handleSuccessReceived = (uuid) => {
+        console.log('Success message received with uuid: ', uuid);
+        setCustomDataUUID(uuid)
+        setCustomDataRequested(false);
+        };
     const handleStartDateChange = (e) => {
         const newStartDate = e.target.value;
         setSelectedStartDate(newStartDate);
@@ -94,11 +102,14 @@ const MapHeader = ({
             }
             const responseData = await response.json();
             console.log('Response:', responseData);
-            
-            /*if (responseData.message === 'Configuration saved successfully') {
-                setLoading(false); // Stop loading after successful response
-                setCustomDataRequested(true); // Set custom data requested
-            }*/
+
+            if (responseData.message === 'Configuration saved successfully and data_collection Lambda called') {
+                const uuid = responseData.uuid;
+                console.log("Start listening to custom data SQS");
+                setUuid(uuid);
+                setCustomDataRequested(true);
+                setStartListening(true);
+            }
 
         } catch (error) {
             console.error('Error:', error);
@@ -213,6 +224,18 @@ const MapHeader = ({
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Include IntervalHandler to listen to SQS when custom data is requested */}
+            {startListening && (
+                <IntervalHandler 
+                    uuid={uuid} // Pass the UUID to IntervalHandler
+                    onSuccessReceived={() => {
+                        handleSuccessReceived(uuid); 
+                        setStartListening(false); // Stop listening after successful message receipt
+                        setLoading(false); // Stop loading indicator
+                    }} 
+                />
             )}
         </div>
     );

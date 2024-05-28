@@ -16,6 +16,7 @@ const GoogleMapFunction = () => {
     const [endDate, setEndDate] = useState("");
     const [map, setMap] = useState(null);
     const [searchVisible, setSearchVisible] = useState(false);
+    const [customUUID,setCustomUUID]  = useState("");
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: API_KEY,
@@ -26,6 +27,12 @@ const GoogleMapFunction = () => {
         setGetData(true);
         setPointsVisible(true);
     }
+    const setCustomDataUUID = (e) => {
+        setGetData(true);
+        setPointsVisible(true);
+        setCustomUUID(e)
+    }
+
 
     const handleCategoryChange = (e) => {
         setSelectedCategory(e.target.value);
@@ -56,6 +63,7 @@ const GoogleMapFunction = () => {
                 pointsVisible={pointsVisible}
                 setStartDate={setStartDate}
                 setEndDate={setEndDate}
+                setCustomDataUUID={setCustomDataUUID}
             />
             <div style={{ position: 'relative', width: '100%', height: 'calc(100vh - 56px)' }}>
                 <GoogleMap
@@ -69,7 +77,7 @@ const GoogleMapFunction = () => {
                     }}
                     onLoad={onMapLoad}
                 >
-                    {getData && <Points startDate={startDate} endDate={endDate} category={selectedCategory} />}
+                    {getData && <Points startDate={startDate} endDate={endDate} category={selectedCategory} uuid={customUUID}/>}
                 </GoogleMap>
                 {searchVisible && <FloatingSearchBar onPlaceSelect={handlePlaceSelect} />}
                 <button

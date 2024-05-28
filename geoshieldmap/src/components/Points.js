@@ -2,12 +2,18 @@ import React, { useEffect, useState } from 'react';
 import MarkerPoints from './MarkerPoints';
 import MarkerPointsMatching from './MarkerPointsMatching';
 
-const Points = ({ category, startDate, endDate }) => {
+const Points = ({ dataReceived, category, startDate, endDate, uuid }) => {
     const [jsonData, setJsonData] = useState(null);
-
+    console.log("uuid in points :" , uuid)
     useEffect(() => {
         const fetchData = async () => {
-            const url = `https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev/get_data?category=${category}&start_date=${startDate}&end_date=${endDate}`;
+            let url;
+            const apiURL='https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev';
+            if (uuid)
+                url = `${apiURL}/get_custom_data?uuid=${uuid}`;
+            else
+                url = `${apiURL}/get_data?category=${category}&start_date=${startDate}&end_date=${endDate}`;
+
             console.log(`Fetching data from: ${url}`);
             try {
                 const response = await fetch(url);
@@ -17,13 +23,14 @@ const Points = ({ category, startDate, endDate }) => {
                 const data = await response.json();
                 setJsonData(data);
                 console.log('Fetched data:', data); // Log data after fetching and setting state
+                dataReceived();
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
         };
 
-        fetchData();
-    }, [category, startDate, endDate]);
+        fetchData(); 
+    }, [category, startDate, endDate ,uuid]);
 
     return (
         <div>
