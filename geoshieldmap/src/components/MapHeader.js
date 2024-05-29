@@ -4,13 +4,13 @@ import IntervalHandler from './IntervalHandler'; // Import the IntervalHandler c
 
 const channelsData = {
     "GDELT_Domains": {
-        "bbc": "bbc.com",
-        "cnn": "cnn.com",
-        "ynet": "ynetnews.com"
+        " BBC": "bbc.com",
+        " CNN": "cnn.com",
+        " Ynet": "ynetnews.com"
     },
     "Telegram_Channels": {
-        "abu-ali": "https://t.me/englishabuali",
-        "Reuters": "https://t.me/ReutersWorldChannel"
+        " Abu-ali": "https://t.me/englishabuali",
+        " Reuters": "https://t.me/ReutersWorldChannel"
     }
 };
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Marker, InfoWindow } from '@react-google-maps/api';
+import { Marker, InfoWindow, useGoogleMap } from '@react-google-maps/api';
 import redIcon from '../assets/icons/red.png';
 import blueIcon from '../assets/icons/blue.png';
 import goldIcon from '../assets/icons/gold.png';
@@ -12,6 +12,7 @@ const MarkerPoints = ({ jsonData, icon }) => {
     const [activeMarker, setActiveMarker] = useState(null);
     const [showDetails, setShowDetails] = useState(false);
     const infoWindowRef = useRef(null);
+    const map = useGoogleMap(); // Get the map instance
 
     useEffect(() => {
         const fetchCoordinates = async () => {
@@ -49,11 +50,23 @@ const MarkerPoints = ({ jsonData, icon }) => {
     const handleMarkerClick = (marker) => {
         setActiveMarker(marker);
         setShowDetails(false);
+
+        // Center the map on the marker's position
+        if (map) {
+            map.panTo(marker.position);
+
+            // Get the map's div and its height
+            const mapDiv = map.getDiv();
+            const mapHeight = mapDiv.offsetHeight;
+
+            // Adjust the map's viewport if the marker is near the top
+            const pixelOffset = mapHeight / 4; // Adjust as necessary
+            map.panBy(0, -pixelOffset);
+        }
     };
 
     const handleCloseInfoWindow = () => {
         setActiveMarker(null);
-
     };
 
     const toggleDetails = () => {

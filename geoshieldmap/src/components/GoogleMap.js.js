@@ -53,6 +53,14 @@ const GoogleMapFunction = () => {
         return <div className='h-72 w-72 bg-red'>Loading...</div>;
     }
 
+    // Define the world bounds
+    const worldBounds = {
+        north: 85,
+        south: -85,
+        west: -180,
+        east: 180,
+    };
+
     return (
         <>
             <MapHeader
@@ -74,6 +82,10 @@ const GoogleMapFunction = () => {
                         mapId: mapId,
                         streetViewControl: false,
                         mapTypeControl: false,
+                        restriction: {
+                            latLngBounds: worldBounds,
+                            strictBounds: true,
+                        },
                     }}
                     onLoad={onMapLoad}
                 >
