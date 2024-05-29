@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect } from 'react';
 import { useJsApiLoader, GoogleMap } from '@react-google-maps/api';
 import Points from './Points';
 import { getGoogleMapsApiKey, getMapId } from './credentials';
@@ -17,6 +17,7 @@ const GoogleMapFunction = () => {
     const [map, setMap] = useState(null);
     const [searchVisible, setSearchVisible] = useState(false);
     const [customUUID,setCustomUUID]  = useState("");
+    const [receivedData, setReceivedData] = useState(false);
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: API_KEY,
@@ -65,9 +66,9 @@ const GoogleMapFunction = () => {
         <>
             <MapHeader
                 selectedCategory={selectedCategory}
-                handleCategoryChange={handleCategoryChange}
                 handleSetData={handleSetData}
-                setGetData={setGetData}
+                handleCategoryChange={handleCategoryChange}
+                receivedData={receivedData}
                 pointsVisible={pointsVisible}
                 setStartDate={setStartDate}
                 setEndDate={setEndDate}
@@ -89,7 +90,7 @@ const GoogleMapFunction = () => {
                     }}
                     onLoad={onMapLoad}
                 >
-                    {getData && <Points startDate={startDate} endDate={endDate} category={selectedCategory} uuid={customUUID}/>}
+                    {getData && <Points  startDate={startDate} endDate={endDate} category={selectedCategory} uuid={customUUID} setReceivedData={setReceivedData}/>}
                 </GoogleMap>
                 {searchVisible && <FloatingSearchBar onPlaceSelect={handlePlaceSelect} />}
                 <button

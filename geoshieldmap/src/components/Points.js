@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import MarkerPoints from './MarkerPoints';
 import MarkerPointsMatching from './MarkerPointsMatching';
 
-const Points = ({category, startDate, endDate, uuid }) => {
+const Points = ({category, startDate, endDate, uuid ,setReceivedData}) => {
     const [jsonData, setJsonData] = useState(null);
     useEffect(() => {
         const fetchData = async () => {
@@ -22,6 +22,7 @@ const Points = ({category, startDate, endDate, uuid }) => {
                 const data = await response.json();
                 setJsonData(data);
                 console.log('Fetched data:', data); // Log data after fetching and setting state
+                setReceivedData(true);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }

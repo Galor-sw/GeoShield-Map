@@ -15,8 +15,8 @@ const channelsData = {
 };
 
 const MapHeader = ({
-    selectedCategory, handleSetData, handleCategoryChange, setGetData,
-    pointsVisible, startDate, endDate, setStartDate, setEndDate ,setCustomDataUUID 
+    selectedCategory, handleSetData, handleCategoryChange, receivedData,
+    pointsVisible, setStartDate, setEndDate ,setCustomDataUUID 
 }) => {
     const [endDateError, setEndDateError] = useState(false);
     const [selectedStartDate, setSelectedStartDate] = useState("");
@@ -40,6 +40,14 @@ const MapHeader = ({
         setStartDate(formattedDate);
 
     }, []);
+
+
+    useEffect(() => {
+        console.log('receivedData has changed:', receivedData);
+        if(receivedData == true)
+            setLoading(false);
+
+      }, [receivedData]);
 
     const handleSuccessReceived = (uuid) => {
         console.log('Success message received with uuid: ', uuid);
@@ -112,13 +120,17 @@ const MapHeader = ({
             }
             const responseData = await response.json();
             console.log('Response:', responseData);
-
+            let uuid;
             if (responseData.message === 'Configuration saved successfully and data_collection Lambda called') {
-                const uuid = responseData.uuid;
+                uuid = responseData.uuid;
                 console.log("Start listening to custom data SQS");
                 setUuid(uuid);
                 setCustomDataRequested(true);
                 setStartListening(true);
+            }
+            else if (responseData.message === 'Configuration already exists'){
+                uuid = responseData.uuid;
+                handleSuccessReceived(uuid);
             }
 
         } catch (error) {
@@ -245,7 +257,6 @@ const MapHeader = ({
                     onSuccessReceived={() => {
                         handleSuccessReceived(uuid); 
                         setStartListening(false); // Stop listening after successful message receipt
-                        setLoading(false); // Stop loading indicator
                     }} 
                 />
             )}
