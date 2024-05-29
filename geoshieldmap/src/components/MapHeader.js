@@ -142,7 +142,7 @@ const MapHeader = ({
                 </select>
                 <input
                     type="date"
-                    value={selectedEndDate}
+                    value={selectedStartDate}
                     onChange={handleStartDateChange}
                     className="bg-white border rounded-md px-4 py-2"
                     style={{ height: '2.5rem' }}
