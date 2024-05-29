@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import IconExplain from './IconExplain';
 import IntervalHandler from './IntervalHandler'; // Import the IntervalHandler component
 
@@ -30,6 +30,16 @@ const MapHeader = ({
     const [customDataRequested, setCustomDataRequested] = useState(false); // State for custom data requested
     const [startListening, setStartListening] = useState(false); // State for SQS listening
     const [uuid, setUuid] = useState(null); 
+
+    useEffect(() => {
+        const today = new Date();
+        const formattedDate = today.toISOString().split('T')[0];
+        setSelectedStartDate(formattedDate);
+        setSelectedEndDate(formattedDate);
+        setEndDate(formattedDate);
+        setStartDate(formattedDate);
+
+    }, []);
 
     const handleSuccessReceived = (uuid) => {
         console.log('Success message received with uuid: ', uuid);
@@ -132,30 +142,33 @@ const MapHeader = ({
                 </select>
                 <input
                     type="date"
-                    value={startDate}
+                    value={selectedEndDate}
+                    min={selectedEndDate}
                     onChange={handleStartDateChange}
                     className="bg-white border rounded-md px-4 py-2"
                     style={{ height: '2.5rem' }}
                 />
                 <input
                     type="date"
-                    value={endDate}
-                    min={startDate}
+                    value={selectedEndDate}
+                    min={selectedEndDate}
                     onChange={handleEndDateChange}
                     className="bg-white border rounded-md px-4 py-2"
                     style={{ height: '2.5rem' }}
                 />
-                <button
-                    onClick={handleSetData}
-                    className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${endDateError ? 'cursor-not-allowed opacity-50' : ''}`}
-                    disabled={endDateError}
-                >
-                    Get Data
-                </button>
+
                 {loading ? (
                     <div className="loader"></div>
                 ) : (
                     <>
+                        {/* Render Get Data button */}
+                        <button
+                            onClick={handleSetData}
+                            className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${endDateError ? 'cursor-not-allowed opacity-50' : ''}`}
+                            disabled={endDateError}
+                        >
+                            Get Data
+                        </button>
                         {!customDataRequested && ( // Render Get Custom Data button only if custom data not requested
                             <button
                                 onClick={() => setShowModal(true)}
@@ -164,6 +177,7 @@ const MapHeader = ({
                                 Get Custom Data
                             </button>
                         )}
+
                     </>
                 )}
                 {pointsVisible && <IconExplain />}
