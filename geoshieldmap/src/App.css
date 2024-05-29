@@ -60,3 +60,12 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+/* Add this CSS to your stylesheets */
+.info-window {
+  padding: 10px; /* Adjust padding as needed */
+  max-width: 300px; /* Adjust max-width as needed */
+}
+
+.info-window .gm-ui-hover-effect {
+  display: none; /* Hide close button */
+}
