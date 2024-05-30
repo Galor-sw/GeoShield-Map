@@ -6,6 +6,7 @@ const Points = ({category, startDate, endDate, uuid ,setReceivedData}) => {
     const [jsonData, setJsonData] = useState(null);
     useEffect(() => {
         const fetchData = async () => {
+            console.log("uuid: " + uuid)
             let url;
             const apiURL='https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev';
             if (uuid)

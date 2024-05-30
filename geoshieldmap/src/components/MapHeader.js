@@ -16,7 +16,7 @@ const channelsData = {
 
 const MapHeader = ({
     selectedCategory, handleSetData, handleCategoryChange, receivedData,
-    pointsVisible, setStartDate, setEndDate ,setCustomDataUUID 
+    pointsVisible, setStartDate, setEndDate ,setCustomDataUUID ,setGetData, setReceivedData
 }) => {
     const [endDateError, setEndDateError] = useState(false);
     const [selectedStartDate, setSelectedStartDate] = useState("");
@@ -30,10 +30,9 @@ const MapHeader = ({
     const [customDataRequested, setCustomDataRequested] = useState(false); // State for custom data requested
     const [startListening, setStartListening] = useState(false); // State for SQS listening
     const [uuid, setUuid] = useState(null); 
-
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0];
     useEffect(() => {
-        const today = new Date();
-        const formattedDate = today.toISOString().split('T')[0];
         setSelectedStartDate(formattedDate);
         setSelectedEndDate(formattedDate);
         setEndDate(formattedDate);
@@ -106,6 +105,8 @@ const MapHeader = ({
 
         setLoading(true); // Start loading
         setShowModal(false); // Close modal
+        setGetData(false);
+        setReceivedData(false);
         try {
             const response = await fetch('https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev/set_config', {
                 method: 'POST',
@@ -162,6 +163,7 @@ const MapHeader = ({
                 <input
                     type="date"
                     value={selectedEndDate}
+                    max={formattedDate}
                     onChange={handleEndDateChange}
                     className="bg-white border rounded-md px-4 py-2"
                     style={{ height: '2.5rem' }}

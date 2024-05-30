@@ -1,4 +1,4 @@
-import React, { useState ,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useJsApiLoader, GoogleMap } from '@react-google-maps/api';
 import Points from './Points';
 import { getGoogleMapsApiKey, getMapId } from './credentials';
@@ -16,7 +16,7 @@ const GoogleMapFunction = () => {
     const [endDate, setEndDate] = useState("");
     const [map, setMap] = useState(null);
     const [searchVisible, setSearchVisible] = useState(false);
-    const [customUUID,setCustomUUID]  = useState("");
+    const [customUUID, setCustomUUID] = useState("");
     const [receivedData, setReceivedData] = useState(false);
 
     const { isLoaded } = useJsApiLoader({
@@ -24,16 +24,22 @@ const GoogleMapFunction = () => {
         libraries: ['places'],
     });
 
-    const handleSetData = (e) => {
-        setGetData(true);
-        setPointsVisible(true);
-    }
-    const setCustomDataUUID = (e) => {
-        setGetData(true);
-        setPointsVisible(true);
-        setCustomUUID(e)
-    }
+    useEffect(() => {
+        console.log("getData: " + getData);
+    }, [getData]);
 
+    const handleSetData = (e) => {
+        setGetData(prevState => !prevState);  // Toggle getData to force re-render
+        setPointsVisible(true);
+        setCustomUUID("");
+    };
+
+    const setCustomDataUUID = (e) => {
+        console.log("in setCustomDataUUID");
+        setCustomUUID(e);
+        setGetData(prevState => !prevState);  // Toggle getData to force re-render
+        setPointsVisible(true);
+    };
 
     const handleCategoryChange = (e) => {
         setSelectedCategory(e.target.value);
@@ -73,6 +79,8 @@ const GoogleMapFunction = () => {
                 setStartDate={setStartDate}
                 setEndDate={setEndDate}
                 setCustomDataUUID={setCustomDataUUID}
+                setGetData={setGetData}
+                setReceivedData={setReceivedData}
             />
             <div style={{ position: 'relative', width: '100%', height: 'calc(100vh - 56px)' }}>
                 <GoogleMap
@@ -90,7 +98,16 @@ const GoogleMapFunction = () => {
                     }}
                     onLoad={onMapLoad}
                 >
-                    {getData && <Points  startDate={startDate} endDate={endDate} category={selectedCategory} uuid={customUUID} setReceivedData={setReceivedData}/>}
+                    {pointsVisible && (
+                        <Points 
+                            key={JSON.stringify({ startDate, endDate, selectedCategory, customUUID, getData })}
+                            startDate={startDate}
+                            endDate={endDate}
+                            category={selectedCategory}
+                            uuid={customUUID}
+                            setReceivedData={setReceivedData}
+                        />
+                    )}
                 </GoogleMap>
                 {searchVisible && <FloatingSearchBar onPlaceSelect={handlePlaceSelect} />}
                 <button
