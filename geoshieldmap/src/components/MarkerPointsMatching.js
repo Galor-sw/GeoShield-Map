@@ -95,7 +95,7 @@ const MarkerPointsMatching = ({ jsonData, icon }) => {
         };
     }, []);
 
-    const renderMessage = (messages) => {
+    const renderMessage = (messages, final_score) => {
         return messages.map((msg, index) => (
             <div key={index}>
                 <p className="text-lg font-bold mb-2">{msg.source} Message:</p>
@@ -104,6 +104,8 @@ const MarkerPointsMatching = ({ jsonData, icon }) => {
                 {msg.url && (
                     <p>
                         <a href={msg.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 font-bold">Link</a>
+                        <br />
+                        <br />
                     </p>
                 )}
             </div>
@@ -124,8 +126,8 @@ const MarkerPointsMatching = ({ jsonData, icon }) => {
                             onCloseClick={handleCloseInfoWindow}
                         >
                             <div ref={infoWindowRef}>
-                                {renderMessage(marker.messages)}
-                                <p className="text-gray-500 mb-2">Final Score: {marker.final_score.toFixed(2)}</p>
+                                {renderMessage(marker.messages, marker.final_score)}
+                                <p className="text-black-500 mb-2 text-l font-bold">Final Score: {marker.final_score.toFixed(2)}</p>
                             </div>
                         </InfoWindow>
                     )}
