@@ -5,6 +5,7 @@ import { getGoogleMapsApiKey, getMapId } from './credentials';
 import MapHeader from './MapHeader';
 import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
 import gpsIcon from '../assets/icons/gps.png'; // Import the GPS icon
+import Graph from './Graph.js'; // Import the Graph component
 
 const GoogleMapFunction = () => {
     const API_KEY = getGoogleMapsApiKey();
@@ -18,6 +19,9 @@ const GoogleMapFunction = () => {
     const [searchVisible, setSearchVisible] = useState(false);
     const [customUUID, setCustomUUID] = useState("");
     const [receivedData, setReceivedData] = useState(false);
+    const [statisticMode, setStatisticMode] = useState(false);
+    const [graphData, setGraphData] = useState(null); 
+
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: API_KEY,
@@ -31,6 +35,7 @@ const GoogleMapFunction = () => {
         console.log('selectedCategories has changed:', selectedCategories);
 
     }, [selectedCategories]);
+
 
     const handleSetData = (e) => {
         setGetData(prevState => !prevState);  // Toggle getData to force re-render
@@ -71,73 +76,141 @@ const GoogleMapFunction = () => {
         east: 180,
     };
 
+    const handleCreateGraph = (selectedLocation, selectedCategories) => {
+        // Gather selected locations
+        // Make API GET call with selected locations as parameters
+        if (selectedLocation) {
+            fetch(`https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev/get_statistics?location=${selectedLocation}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Process the data received from the API
+                    console.log('Received data:', data);
+                    console.log('selectedCategories:', selectedCategories);
+
+                    // Filter the data based on selected categories
+                    const filteredData = [];
+                    const locationKey = selectedLocation + '\n';
+
+                    data[locationKey].forEach(categoryObject => {
+                        const existsCategory=Object.keys(categoryObject)[0];
+
+                        selectedCategories.forEach(category =>
+                            {
+                                if (category.value== existsCategory)
+                                    {
+                                        filteredData.push(categoryObject);
+                                    }
+                            }
+                        )
+    
+                    });
+                    console.log('Filtered data:', filteredData);
+                    // Set the filtered data to state
+                    setGraphData({
+                        filteredData,
+                        selectedCategories,
+                        selectedLocation,
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Handle errors here
+                });
+        }
+    };
+    
+    
+
     return (
-        <>
-            <MapHeader
-                selectedCategories={selectedCategories}
-                setSelectedCategories={setSelectedCategories}
-                handleSetData={handleSetData}
-                receivedData={receivedData}
-                pointsVisible={pointsVisible}
-                setStartDate={setStartDate}
-                setEndDate={setEndDate}
-                setCustomDataUUID={setCustomDataUUID}
-                setGetData={setGetData}
-                setReceivedData={setReceivedData}
-                searchVisible={searchVisible}
-                setSearchVisible={setSearchVisible}
-            />
-            <div style={{ position: 'relative', width: '100%', height: 'calc(100vh - 56px)' }}>
-                <GoogleMap
-                    center={{ lat: 32.07467, lng: 34.78154 }}
-                    zoom={3}
-                    mapContainerStyle={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-                    options={{
-                        mapId: mapId,
-                        streetViewControl: false,
-                        mapTypeControl: false,
-                        restriction: {
-                            latLngBounds: worldBounds,
-                            strictBounds: true,
-                        },
-                    }}
-                    onLoad={onMapLoad}
-                >
-                    {pointsVisible && (
-                        <Points 
-                            startDate={startDate}
-                            endDate={endDate}
-                            categories={selectedCategories}
-                            uuid={customUUID}
-                            setReceivedData={setReceivedData}
-                        />
-                    )}
-                </GoogleMap>
-                {searchVisible && <FloatingSearchBar onPlaceSelect={handlePlaceSelect} />}
-                <button
-                    onClick={() => setSearchVisible(!searchVisible)}
-                    style={{
-                        position: 'absolute',
-                        bottom: 30,
-                        left: 20,
-                        zIndex: 1000,
-                        width: '40px',
-                        height: '40px',
-                        backgroundColor: '#fff',
-                        border: '1px solid #ccc',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
-                    }}
-                >
-                    <img src={gpsIcon} alt="Search Location" style={{ width: '70%', height: '70%' }} />
-                </button>
+        <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
+                <MapHeader
+                    selectedCategories={selectedCategories}
+                    setSelectedCategories={setSelectedCategories}
+                    handleSetData={handleSetData}
+                    receivedData={receivedData}
+                    pointsVisible={pointsVisible}
+                    setStartDate={setStartDate}
+                    setEndDate={setEndDate}
+                    setCustomDataUUID={setCustomDataUUID}
+                    setGetData={setGetData}
+                    setReceivedData={setReceivedData}
+                    searchVisible={searchVisible}
+                    setSearchVisible={setSearchVisible}
+                    setStatisticMode={setStatisticMode}
+                    handleCreateGraph={handleCreateGraph}
+                />
             </div>
-        </>
+            <div style={{ position: 'absolute', top: '56px', left: 0, right: 0, bottom: 0 }}>
+                {!statisticMode && (
+                    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                        <GoogleMap
+                            center={{ lat: 32.07467, lng: 34.78154 }}
+                            zoom={3}
+                            mapContainerStyle={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+                            options={{
+                                mapId: mapId,
+                                streetViewControl: false,
+                                mapTypeControl: false,
+                                restriction: {
+                                    latLngBounds: worldBounds,
+                                    strictBounds: true,
+                                },
+                            }}
+                            onLoad={onMapLoad}
+                        >
+                            {pointsVisible && (
+                                <Points 
+                                    startDate={startDate}
+                                    endDate={endDate}
+                                    categories={selectedCategories}
+                                    uuid={customUUID}
+                                    setReceivedData={setReceivedData}
+                                />
+                            )}
+                        </GoogleMap>
+                        {searchVisible && <FloatingSearchBar onPlaceSelect={handlePlaceSelect} />}
+                        <button
+                            onClick={() => setSearchVisible(!searchVisible)}
+                            style={{
+                                position: 'absolute',
+                                bottom: 30,
+                                left: 20,
+                                zIndex: 1000,
+                                width: '40px',
+                                height: '40px',
+                                backgroundColor: '#fff',
+                                border: '1px solid #ccc',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+                            }}
+                        >
+                            <img src={gpsIcon} alt="Search Location" style={{ width: '70%', height: '70%' }} />
+                        </button>
+                    </div>
+                )}
+                {statisticMode && graphData && (
+                    <div style={{ width: '100%', height: '100%' }}>
+                        <Graph
+                            filteredData={graphData.filteredData}
+                            selectedCategories={graphData.selectedCategories}
+                            selectedLocation={graphData.selectedLocation}
+                        />
+                    </div>
+                )}
+            </div>
+        </div>
     );
+    
 };
 
 const FloatingSearchBar = ({ onPlaceSelect }) => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import IconExplain from './IconExplain';
 import IntervalHandler from './IntervalHandler'; // Import the IntervalHandler component
 import Select from 'react-select'; // Import react-select
+import countriesData from '../assets/Data/countries.json'; // Import the countries data
 
 const channelsData = {
     "GDELT_Domains": {
@@ -23,7 +24,7 @@ const categoryOptions = [
 
 const MapHeader = ({
     selectedCategories, setSelectedCategories, handleSetData, receivedData,
-    pointsVisible, setStartDate, setEndDate ,setCustomDataUUID ,setGetData, setReceivedData
+    pointsVisible, setStartDate, setEndDate, setCustomDataUUID, setGetData, setReceivedData ,setStatisticMode ,handleCreateGraph
 }) => {
     const [endDateError, setEndDateError] = useState(false);
     const [selectedStartDate, setSelectedStartDate] = useState("");
@@ -36,24 +37,41 @@ const MapHeader = ({
     const [loading, setLoading] = useState(false); // State for loading
     const [customDataRequested, setCustomDataRequested] = useState(false); // State for custom data requested
     const [startListening, setStartListening] = useState(false); // State for SQS listening
-    const [uuid, setUuid] = useState(null); 
+    const [uuid, setUuid] = useState(null);
     const [categoryError, setCategoryError] = useState(false); // State for category error message
+    const [toggleState, setToggleState] = useState(false); // State for the toggle switch
+    const [countryOptions, setCountryOptions] = useState([]); // State for country options
+    const [selectedLocation, setSelectedLocation] = useState("");
     const today = new Date();
     const formattedDate = today.toISOString().split('T')[0];
+
     useEffect(() => {
         setSelectedStartDate(formattedDate);
         setSelectedEndDate(formattedDate);
         setEndDate(formattedDate);
         setStartDate(formattedDate);
-
+        const countries = countriesData.countries.map(country => ({ value: country, label: country }));
+        setCountryOptions(countries);
     }, []);
+
 
     useEffect(() => {
         console.log('receivedData has changed:', receivedData);
-        if(receivedData === true)
+        if (receivedData === true)
             setLoading(false);
 
-      }, [receivedData]);
+    }, [receivedData]);
+
+    useEffect(() => {
+        console.log('Toggle state:', toggleState); // Print the toggle state
+        setStatisticMode(toggleState);
+        setSelectedLocation(""); 
+    }, [toggleState]);
+
+    useEffect(() => {
+        console.log('selectedLocation has changed:', selectedLocation);
+
+    }, [selectedLocation]);
 
     const handleSuccessReceived = (uuid) => {
         console.log('Success message received with uuid: ', uuid);
@@ -100,7 +118,7 @@ const MapHeader = ({
             setCategoryError(true);
             return;
         }
-        
+
         setCategoryError(false); // Reset category error message
 
         const selectedCategory = selectedCategories[0].value;
@@ -147,7 +165,7 @@ const MapHeader = ({
                 setCustomDataRequested(true);
                 setStartListening(true);
             }
-            else if (responseData.message === 'Configuration already exists'){
+            else if (responseData.message === 'Configuration already exists') {
                 uuid = responseData.uuid;
                 handleSuccessReceived(uuid);
             }
@@ -167,59 +185,105 @@ const MapHeader = ({
         }
     };
 
-    return (
-        <div className="fixed top-0 left-0 right-0 bg-[#464444] flex flex-col items-center justify-center p-4 border-b border-black z-10">
-            <div className="flex items-center space-x-2">
-                <Select
-                    isMulti
-                    value={selectedCategories}
-                    onChange={setSelectedCategories}
-                    options={categoryOptions}
-                    className="w-64"
-                />
-                <input
-                    type="date"
-                    value={selectedStartDate}
-                    onChange={handleStartDateChange}
-                    className="bg-white border rounded-md px-4 py-2"
-                    style={{ height: '2.5rem' }}
-                />
-                <input
-                    type="date"
-                    value={selectedEndDate}
-                    max={formattedDate}
-                    onChange={handleEndDateChange}
-                    className="bg-white border rounded-md px-4 py-2"
-                    style={{ height: '2.5rem' }}
-                />
+    const handleToggleChange = () => {
+        setToggleState(prevState => !prevState); // Toggle the state
+    };
 
-                {loading ? (
-                    <div className="loader"></div>
+
+
+    const setLocation =(e) =>
+    {
+        console.log(e.value);
+        if (e.value)
+            setSelectedLocation(e.value);
+    };
+    
+
+    return (
+        <div className="fixed top-0 left-0 right-0 bg-[#464444] flex items-center justify-between p-4 border-b border-black z-10">
+            <div className="flex items-center space-x-2">
+                {toggleState ? (
+                    <>
+                        <Select
+                            isMulti={false} // Set isMulti to false to allow only single selection
+                            value={countryOptions.find(option => option.value === selectedLocation)} // Update value based on selectedLocation
+                            onChange={setLocation}
+                            options={countryOptions}
+                            className="w-64"
+                        />
+                        <Select
+                            isMulti
+                            value={selectedCategories}
+                            onChange={setSelectedCategories}
+                            options={categoryOptions}
+                            className="w-64"
+                        />
+                        <button
+                            onClick={() => handleCreateGraph(selectedLocation,selectedCategories)}
+                            className="bg-green-500 hover:bg-green-700 text-white
+                            font-bold py-2 px-4 rounded"
+                        >
+                            Create Graph
+                        </button>
+                    </>
                 ) : (
                     <>
-                        {/* Render Get Data button */}
-                        <button
-                            onClick={handleSetData}
-                            className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${endDateError ? 'cursor-not-allowed opacity-50' : ''}`}
-                            disabled={endDateError}
-                        >
-                            Get Data
-                        </button>
-                        {!customDataRequested && ( // Render Get Custom Data button only if custom data not requested
-                            <button
-                                onClick={handleShowModal}
-                                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-                            >
-                                Get Custom Data
-                            </button>
+                        <Select
+                            isMulti
+                            value={selectedCategories}
+                            onChange={setSelectedCategories}
+                            options={categoryOptions}
+                            className="w-64"
+                        />
+                        <input
+                            type="date"
+                            value={selectedStartDate}
+                            onChange={handleStartDateChange}
+                            className="bg-white border rounded-md px-4 py-2"
+                            style={{ height: '2.5rem' }}
+                        />
+                        <input
+                            type="date"
+                            value={selectedEndDate}
+                            max={formattedDate}
+                            onChange={handleEndDateChange}
+                            className="bg-white border rounded-md px-4 py-2"
+                            style={{ height: '2.5rem' }}
+                        />
+                        {loading ? (
+                            <div className="loader"></div>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={handleSetData}
+                                    className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${endDateError ? 'cursor-not-allowed opacity-50' : ''}`}
+                                    disabled={endDateError}
+                                >
+                                    Get Data
+                                </button>
+                                {!customDataRequested && (
+                                    <button
+                                        onClick={handleShowModal}
+                                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                                    >
+                                        Get Custom Data
+                                    </button>
+                                )}
+                            </>
                         )}
                     </>
                 )}
-                {pointsVisible && <IconExplain />}
+            </div>
+            <div>
+                <label className="mr-2 text-white">Statistics Mod:</label>
+                <label className="switch">
+                    <input type="checkbox" checked={toggleState} onChange={handleToggleChange} />
+                    <span className="slider round"></span>
+                </label>
             </div>
             {endDateError && <p className="text-white bg-red-600 text-center rounded-md py-1 px-2 mt-2">End date cannot be earlier than start date</p>}
             {categoryError && <p className="text-white bg-red-600 text-center rounded-md py-1 px-2 mt-2">Please select exactly one category</p>}
-            
+
             {showModal && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-20">
                     <div className="bg-white p-4 rounded-md">
@@ -266,7 +330,7 @@ const MapHeader = ({
                                 Cancel
                             </button>
                             <button
-                                onClick={handleGetCustomData}
+                                onClick={() => handleGetCustomData}
                                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                             >
                                 Get Custom Data
