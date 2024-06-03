@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import IconExplain from './IconExplain';
 import IntervalHandler from './IntervalHandler'; // Import the IntervalHandler component
+import Select from 'react-select'; // Import react-select
 
 const channelsData = {
     "GDELT_Domains": {
@@ -14,8 +15,14 @@ const channelsData = {
     }
 };
 
+const categoryOptions = [
+    { value: 'security', label: 'Security' },
+    { value: 'antisemitism', label: 'Antisemitism' },
+    { value: 'natural-disasters', label: 'Natural-Disasters' }
+];
+
 const MapHeader = ({
-    selectedCategory, handleSetData, handleCategoryChange, receivedData,
+    selectedCategories, setSelectedCategories, handleSetData, receivedData,
     pointsVisible, setStartDate, setEndDate ,setCustomDataUUID ,setGetData, setReceivedData
 }) => {
     const [endDateError, setEndDateError] = useState(false);
@@ -30,6 +37,7 @@ const MapHeader = ({
     const [customDataRequested, setCustomDataRequested] = useState(false); // State for custom data requested
     const [startListening, setStartListening] = useState(false); // State for SQS listening
     const [uuid, setUuid] = useState(null); 
+    const [categoryError, setCategoryError] = useState(false); // State for category error message
     const today = new Date();
     const formattedDate = today.toISOString().split('T')[0];
     useEffect(() => {
@@ -40,10 +48,9 @@ const MapHeader = ({
 
     }, []);
 
-
     useEffect(() => {
         console.log('receivedData has changed:', receivedData);
-        if(receivedData == true)
+        if(receivedData === true)
             setLoading(false);
 
       }, [receivedData]);
@@ -52,7 +59,8 @@ const MapHeader = ({
         console.log('Success message received with uuid: ', uuid);
         setCustomDataUUID(uuid)
         setCustomDataRequested(false);
-        };
+    };
+
     const handleStartDateChange = (e) => {
         const newStartDate = e.target.value;
         setSelectedStartDate(newStartDate);
@@ -87,6 +95,16 @@ const MapHeader = ({
     };
 
     const handleGetCustomData = async () => {
+        // Ensure only one category is selected
+        if (selectedCategories.length !== 1) {
+            setCategoryError(true);
+            return;
+        }
+        
+        setCategoryError(false); // Reset category error message
+
+        const selectedCategory = selectedCategories[0].value;
+
         const filteredChannelsData = {
             GDELT_Domains: selectedChannels.GDELT.reduce((obj, key) => {
                 obj[key] = channelsData.GDELT_Domains[key];
@@ -140,19 +158,25 @@ const MapHeader = ({
         }
     };
 
+    const handleShowModal = () => {
+        if (selectedCategories.length !== 1) {
+            setCategoryError(true);
+        } else {
+            setCategoryError(false);
+            setShowModal(true);
+        }
+    };
+
     return (
         <div className="fixed top-0 left-0 right-0 bg-[#464444] flex flex-col items-center justify-center p-4 border-b border-black z-10">
             <div className="flex items-center space-x-2">
-                <select
-                    value={selectedCategory}
-                    onChange={handleCategoryChange}
-                    className="bg-white border rounded-md px-4 py-2"
-                    style={{ height: '2.5rem' }}
-                >
-                    <option value="security">Security</option>
-                    <option value="antisemitism">Antisemitism</option>
-                    <option value="natural-disasters">Natural-Disasters</option>
-                </select>
+                <Select
+                    isMulti
+                    value={selectedCategories}
+                    onChange={setSelectedCategories}
+                    options={categoryOptions}
+                    className="w-64"
+                />
                 <input
                     type="date"
                     value={selectedStartDate}
@@ -183,18 +207,18 @@ const MapHeader = ({
                         </button>
                         {!customDataRequested && ( // Render Get Custom Data button only if custom data not requested
                             <button
-                                onClick={() => setShowModal(true)}
+                                onClick={handleShowModal}
                                 className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
                             >
                                 Get Custom Data
                             </button>
                         )}
-
                     </>
                 )}
                 {pointsVisible && <IconExplain />}
             </div>
             {endDateError && <p className="text-white bg-red-600 text-center rounded-md py-1 px-2 mt-2">End date cannot be earlier than start date</p>}
+            {categoryError && <p className="text-white bg-red-600 text-center rounded-md py-1 px-2 mt-2">Please select exactly one category</p>}
             
             {showModal && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-20">
@@ -245,21 +269,16 @@ const MapHeader = ({
                                 onClick={handleGetCustomData}
                                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                             >
-                                Get Data
+                                Get Custom Data
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-
-            {/* Include IntervalHandler to listen to SQS when custom data is requested */}
             {startListening && (
-                <IntervalHandler 
-                    uuid={uuid} // Pass the UUID to IntervalHandler
-                    onSuccessReceived={() => {
-                        handleSuccessReceived(uuid); 
-                        setStartListening(false); // Stop listening after successful message receipt
-                    }} 
+                <IntervalHandler
+                    uuid={uuid}
+                    handleSuccessReceivedHeader={handleSuccessReceived}
                 />
             )}
         </div>

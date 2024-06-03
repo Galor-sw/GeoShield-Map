@@ -13,7 +13,7 @@ const queueUrl = 'https://sqs.eu-west-1.amazonaws.com/637423308941/api_queue';
 let intervalId = null; // Store interval ID
 let isListening = false; // Flag to control the SQS listener
 
-const listenSqs = async (onSuccessReceived, uuid ,setRelevantMessageReceived) => {
+const listenSqs = async (handleSuccessReceived, uuid ,setRelevantMessageReceived) => {
     console.log('Listening to SQS...');
     if (isListening) return; // Return if already listening
 
@@ -50,7 +50,7 @@ const listenSqs = async (onSuccessReceived, uuid ,setRelevantMessageReceived) =>
                     if (objectKey.includes(uuid)) {
                         console.log('Relevant message received:', snsMessage);
                         setRelevantMessageReceived(true); // Update the state variable
-                        onSuccessReceived(); // Trigger callback on success message
+                        handleSuccessReceived(uuid); // Trigger callback on success message
                         await deleteMessage(message.ReceiptHandle); // Delete the message from SQS
                         stopListening(); // Stop the listener interval
                     } else {

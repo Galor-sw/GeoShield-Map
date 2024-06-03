@@ -1,8 +1,17 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Marker, InfoWindow, useGoogleMap } from '@react-google-maps/api';
-import redIcon from '../assets/icons/red.png';
-import blueIcon from '../assets/icons/blue.png';
-import goldIcon from '../assets/icons/gold.png';
+
+// Security Icons
+import redSecurityIcon from '../assets/icons/red-security.png';
+import blueSecurityIcon from '../assets/icons/blue-security.png';
+
+// Antisemitism Icons
+import redAntisemitismIcon from '../assets/icons/red-antisemitism.png';
+import blueAntisemitismIcon from '../assets/icons/blue-antisemitism.png';
+
+// Natural Disasters Icons
+import redNaturalDisastersIcon from '../assets/icons/red-natural-disasters.png';
+import blueNaturalDisastersIcon from '../assets/icons/blue-natural-disasters.png';
 import { getGoogleMapsApiKey } from './credentials';
 
 const API_KEY = getGoogleMapsApiKey(); // Replace with your Google Maps API key
@@ -16,8 +25,20 @@ const MarkerPoints = ({ jsonData, icon }) => {
 
     useEffect(() => {
         const fetchCoordinates = async () => {
+            if (!jsonData || jsonData.length === 0) {
+                console.error("JSON data is empty or undefined.");
+                setMarkers([]); // Clear markers if jsonData is empty
+                return;
+            }
+
+            setMarkers([]); // Clear markers before fetching new coordinates
+
             const promises = jsonData.map(async (item) => {
                 const location = item.location;
+                if (!location) {
+                    console.warn(`Location is missing for item with id: ${item.Telegram_id}`);
+                    return null; // Skip if location is missing
+                }
 
                 const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${API_KEY}`;
                 const response = await fetch(apiUrl);
@@ -31,10 +52,11 @@ const MarkerPoints = ({ jsonData, icon }) => {
                         id: item.Telegram_id,
                         position: { lat, lng },
                         message: item,
-                        type: item.type
+                        category: item.classification
                     };
                 }
 
+                console.warn(`Geocode API returned no results for location: ${location}`);
                 return null;
             });
 
@@ -42,9 +64,7 @@ const MarkerPoints = ({ jsonData, icon }) => {
             setMarkers(resolvedMarkers.filter(marker => marker !== null));
         };
 
-        if (jsonData.length > 0) {
-            fetchCoordinates();
-        }
+        fetchCoordinates();
     }, [jsonData]);
 
     const handleMarkerClick = (marker) => {
@@ -73,15 +93,27 @@ const MarkerPoints = ({ jsonData, icon }) => {
         setShowDetails(!showDetails);
     };
 
-    const getMarkerIcon = (iconString) => {
-        switch (iconString) {
-            case 'gold':
-                return goldIcon;
-            case 'blue':
-                return blueIcon;
-            case 'red':
-            default:
-                return redIcon;
+    const getMarkerIcon = (iconString, category) => {
+        const security = category === 'security';
+        const antisemitism = category === 'antisemitism';
+        const naturalDisasters = category === 'natural-disasters';
+    
+        if (iconString === 'blue') {
+            if (security) {
+                return blueSecurityIcon;
+            } else if (antisemitism) {
+                return blueAntisemitismIcon;
+            } else if (naturalDisasters) {
+                return blueNaturalDisastersIcon;
+            }
+        } else {
+            if (security) {
+                return redSecurityIcon;
+            } else if (antisemitism) {
+                return redAntisemitismIcon;
+            } else if (naturalDisasters) {
+                return redNaturalDisastersIcon;
+            } 
         }
     };
 
@@ -103,50 +135,38 @@ const MarkerPoints = ({ jsonData, icon }) => {
     }, []);
 
     const renderMessage = (item) => {
-        const { Telegram_message, GDELT_message, event_breakdown, date, title, message, url } = item;
-
-        if (icon === 'gold') {
+        const { event_breakdown, date, title, message, url } = item;
+        if (showDetails) {
             return (
                 <div>
-                    <p className="text-lg font-bold mb-2">Telegram Message:</p>
-                    <p className="mb-2">{Telegram_message}</p>
-                    <p className="text-lg font-bold mb-2">GDELT Message:</p>
-                    <p className="mb-2">{GDELT_message}</p>
+                    <p className="text-lg font-bold mb-2">{title}</p>
+                    <p className="mb-2">{message}</p>
+                    {url && (
+                        <p>
+                            <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 font-bold">Link</a>
+                        </p>
+                    )}
+                    <p className="text-gray-500 mb-2">{date}</p>
+                    <div className="text-center">
+                        <button className="text-blue-500" onClick={toggleDetails}>Read Less...</button>
+                    </div>
                 </div>
             );
         } else {
-            if (showDetails) {
-                return (
-                    <div>
-                        <p className="text-lg font-bold mb-2">{title}</p>
-                        <p className="mb-2">{message}</p>
-                        {url && (
-                            <p>
-                                <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 font-bold">Link</a>
-                            </p>
-                        )}
-                        <p className="text-gray-500 mb-2">{date}</p>
-                        <div className="text-center">
-                            <button className="text-blue-500" onClick={toggleDetails}>Read Less...</button>
-                        </div>
+            // Split event_breakdown string by newline character '\n' and map each part to a paragraph
+            const breakdownParts = event_breakdown.split('\n');
+            const breakdownParagraphs = breakdownParts.map((part, index) => (
+                <p key={index} className="mb-2">{part}</p>
+            ));
+            return (
+                <div>
+                    <p className="mb-2">{breakdownParagraphs}</p>
+                    <p className="text-gray-500 mb-2">{date}</p>
+                    <div className="text-center">
+                        <button className="text-blue-500" onClick={toggleDetails}>Read More...</button>
                     </div>
-                );
-            } else {
-                // Split event_breakdown string by newline character '\n' and map each part to a paragraph
-                const breakdownParts = event_breakdown.split('\n');
-                const breakdownParagraphs = breakdownParts.map((part, index) => (
-                    <p key={index} className="mb-2">{part}</p>
-                ));
-                return (
-                    <div>
-                        <p className="mb-2">{breakdownParagraphs}</p>
-                        <p className="text-gray-500 mb-2">{date}</p>
-                        <div className="text-center">
-                            <button className="text-blue-500" onClick={toggleDetails}>Read More...</button>
-                        </div>
-                    </div>
-                );
-            }
+                </div>
+            );
         }
     };
 
@@ -157,7 +177,7 @@ const MarkerPoints = ({ jsonData, icon }) => {
                     key={marker.id}
                     position={marker.position}
                     icon={{
-                        url: getMarkerIcon(icon),
+                        url: getMarkerIcon(icon, marker.category),
                     }}
                     onClick={() => handleMarkerClick(marker)}
                 >

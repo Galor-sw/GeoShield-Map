@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import listenSqs from './Sqs';
 
-const IntervalHandler = ({ onSuccessReceived, uuid }) => {
+const IntervalHandler = ({ handleSuccessReceivedHeader, uuid }) => {
     const [isListening, setIsListening] = useState(true);
     const [relevantMessageReceived, setRelevantMessageReceived] = useState(false);
 
     useEffect(() => {
         let intervalId = null;
 
-        const handleSuccessReceived = async () => {
+        const handleSuccessReceived = async (uuid) => {
             setIsListening(false); // Set listening flag to false upon successful message receipt
-            onSuccessReceived(); // Trigger callback on success message
+            handleSuccessReceivedHeader(uuid); // Trigger callback on success message
         };
 
         const startListening = () => {
@@ -33,10 +33,9 @@ const IntervalHandler = ({ onSuccessReceived, uuid }) => {
         return () => {
             clearInterval(intervalId); // Cleanup on component unmount
         };
-    }, [onSuccessReceived, isListening, uuid]);
+    }, [isListening, uuid]);
 
     // Render a message based on whether a relevant message has been received
-    return relevantMessageReceived ? <p>Relevant message received!</p> : null;
 };
 
 export default IntervalHandler;

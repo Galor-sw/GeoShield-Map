@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Marker, InfoWindow } from '@react-google-maps/api';
-import redIcon from '../assets/icons/red.png';
-import blueIcon from '../assets/icons/blue.png';
-import goldIcon from '../assets/icons/gold.png';
+import goldIconSecurity from '../assets/icons/gold-security.png';
+import goldIconAntisemitism from '../assets/icons/gold-antisemitism.png';
+import goldIconNaturalDisasters from '../assets/icons/gold-natural-disasters.png';
 import { getGoogleMapsApiKey } from './credentials';
 
 const API_KEY = getGoogleMapsApiKey(); // Replace with your Google Maps API key
@@ -16,34 +16,63 @@ const MarkerPointsMatching = ({ jsonData, icon }) => {
 
     useEffect(() => {
         const fetchCoordinates = async () => {
-            jsonData.forEach(async item => {
-                const keys = Object.keys(item);
-                const promises = keys.map(async (key) => {
-                    const location = item[key].location;
-                    const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${API_KEY}`;
-                    const response = await fetch(apiUrl);
-                    const data = await response.json();
-                    if (data.status === 'OK' && data.results.length > 0) {
-                        const result = data.results[0];
-                        const { lat, lng } = result.geometry.location;
-                        return {
-                            id: key,
-                            position: { lat, lng },
-                            messages: item[key].messages,
-                            final_score: item[key].final_score
-                        };
-                    }
-                    return null;
-                });
+            if (!jsonData || jsonData.length === 0) {
+                console.log("JSON data is empty or undefined.");
+                return;
+            }
 
-                const resolvedMarkers = await Promise.all(promises);
-                setMarkers(resolvedMarkers.filter(marker => marker !== null));
+            const allPromises = [];
+
+            jsonData.forEach(item => {
+                const category = item.classification;
+                const keys = Object.keys(item);
+
+                keys.forEach(key => {
+                    const entry = item[key];
+                    if (!entry || !entry.location) {
+                        console.warn(`Location is missing for key: ${key}`);
+                        return; // Skip this entry if location is missing
+                    }
+
+                    const location = entry.location;
+                    const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${API_KEY}`;
+
+                    const promise = fetch(apiUrl)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`Geocode API request failed for location: ${location}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.status === 'OK' && data.results.length > 0) {
+                                const result = data.results[0];
+                                const { lat, lng } = result.geometry.location;
+                                return {
+                                    id: key,
+                                    position: { lat, lng },
+                                    messages: entry.messages,
+                                    final_score: entry.final_score,
+                                    category: category // Add category to marker
+                                };
+                            }
+                            console.warn(`Geocode API returned no results for location: ${location}`);
+                            return null;
+                        })
+                        .catch(error => {
+                            console.error(`Error fetching coordinates for location: ${location}`, error);
+                            return null;
+                        });
+
+                    allPromises.push(promise);
+                });
             });
+
+            const resolvedMarkers = await Promise.all(allPromises);
+            setMarkers(resolvedMarkers.filter(marker => marker !== null));
         };
 
-        if (jsonData.length > 0) {
-            fetchCoordinates();
-        }
+        fetchCoordinates();
     }, [jsonData, icon]);
 
     const handleMarkerClick = (marker) => {
@@ -59,26 +88,30 @@ const MarkerPointsMatching = ({ jsonData, icon }) => {
         setShowDetails(!showDetails);
     };
 
-    const getMarkerIcon = (iconString, score) => {
+    const getMarkerIcon = (category, score) => {
         const size = Math.max(10, MAX_ICON_SIZE * score); // Minimum size set to 10 for visibility
-        switch (iconString) {
-            case 'gold':
-                return {
-                    url: goldIcon,
-                    scaledSize: new window.google.maps.Size(size, size),
-                };
-            case 'blue':
-                return {
-                    url: blueIcon,
-                    scaledSize: new window.google.maps.Size(size, size),
-                };
-            case 'red':
+        let iconUrl;
+        console.log("category:", category);
+        switch (category) {
+            case 'security':
+                iconUrl = goldIconSecurity;
+                break;
+            case 'antisemitism':
+                iconUrl = goldIconAntisemitism;
+                break;
+            case 'natural-disasters':
+                iconUrl = goldIconNaturalDisasters;
+                break;
             default:
-                return {
-                    url: redIcon,
-                    scaledSize: new window.google.maps.Size(size, size),
-                };
+                console.warn(`Unknown category: ${category}`);
+                iconUrl = ''; // Set a default icon URL or handle the unknown category case
+                break;
         }
+
+        return {
+            url: iconUrl,
+            scaledSize: new window.google.maps.Size(size, size),
+        };
     };
 
     const handleOutsideClick = (event) => {
@@ -118,7 +151,7 @@ const MarkerPointsMatching = ({ jsonData, icon }) => {
                 <Marker
                     key={marker.id}
                     position={marker.position}
-                    icon={getMarkerIcon(icon, marker.final_score)}
+                    icon={getMarkerIcon(marker.category, marker.final_score)}
                     onClick={() => handleMarkerClick(marker)}
                 >
                     {activeMarker === marker && (
