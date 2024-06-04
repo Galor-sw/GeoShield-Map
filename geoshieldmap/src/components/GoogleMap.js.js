@@ -127,7 +127,7 @@ const GoogleMapFunction = () => {
     
 
     return (
-        <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
+        <div style={{ backgroundColor: '#333',position: 'relative', width: '100%', height: '100vh' }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
                 <MapHeader
                     selectedCategories={selectedCategories}
@@ -146,8 +146,8 @@ const GoogleMapFunction = () => {
                     handleCreateGraph={handleCreateGraph}
                 />
             </div>
-            <div style={{ position: 'absolute', top: '56px', left: 0, right: 0, bottom: 0 }}>
                 {!statisticMode && (
+                <div style={{ position: 'absolute', top: '56px', left: 0, right: 0, bottom: 0 }}>
                     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                         <GoogleMap
                             center={{ lat: 32.07467, lng: 34.78154 }}
@@ -197,18 +197,21 @@ const GoogleMapFunction = () => {
                             <img src={gpsIcon} alt="Search Location" style={{ width: '70%', height: '70%' }} />
                         </button>
                     </div>
+                </div>
                 )}
+
                 {statisticMode && graphData && (
-                    <div style={{ width: '100%', height: '100%' }}>
+                <div style={{  position: 'absolute', left: 0, right: 0, bottom: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <div style={{ position: 'relative' ,width: '100%', height: '100%' }}>
                         <Graph
                             filteredData={graphData.filteredData}
                             selectedCategories={graphData.selectedCategories}
                             selectedLocation={graphData.selectedLocation}
                         />
                     </div>
+                </div>
                 )}
             </div>
-        </div>
     );
     
 };

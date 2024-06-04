@@ -3,6 +3,7 @@ import IconExplain from './IconExplain';
 import IntervalHandler from './IntervalHandler'; // Import the IntervalHandler component
 import Select from 'react-select'; // Import react-select
 import countriesData from '../assets/Data/countries.json'; // Import the countries data
+import SystemIcon from '../assets/icons/logo_1.png';
 
 const channelsData = {
     "GDELT_Domains": {
@@ -41,7 +42,7 @@ const MapHeader = ({
     const [categoryError, setCategoryError] = useState(false); // State for category error message
     const [toggleState, setToggleState] = useState(false); // State for the toggle switch
     const [countryOptions, setCountryOptions] = useState([]); // State for country options
-    const [selectedLocation, setSelectedLocation] = useState("");
+    const [selectedLocation, setSelectedLocation] = useState("Israel");
     const today = new Date();
     const formattedDate = today.toISOString().split('T')[0];
 
@@ -50,10 +51,14 @@ const MapHeader = ({
         setSelectedEndDate(formattedDate);
         setEndDate(formattedDate);
         setStartDate(formattedDate);
-        const countries = countriesData.countries.map(country => ({ value: country, label: country }));
+    
+        // Sort countries in alphabetical order from largest to smallest
+        const sortedCountries = countriesData.countries.sort((a, b) => a.localeCompare(b));
+        const countries = sortedCountries.map(country => ({ value: country, label: country }));
+    
         setCountryOptions(countries);
     }, []);
-
+    
 
     useEffect(() => {
         console.log('receivedData has changed:', receivedData);
@@ -65,7 +70,6 @@ const MapHeader = ({
     useEffect(() => {
         console.log('Toggle state:', toggleState); // Print the toggle state
         setStatisticMode(toggleState);
-        setSelectedLocation(""); 
     }, [toggleState]);
 
     useEffect(() => {
@@ -199,101 +203,157 @@ const MapHeader = ({
     };
     
 
+    const customStyles = {
+        control: (provided) => ({
+            ...provided,
+            backgroundColor: '#333',
+            borderColor: '#555',
+            color: '#fff',
+        }),
+        menu: (provided) => ({
+            ...provided,
+            backgroundColor: '#333',
+            color: '#fff',
+        }),
+        singleValue: (provided) => ({
+            ...provided,
+            color: '#fff',
+        }),
+        option: (provided, state) => ({
+            ...provided,
+            backgroundColor: state.isSelected ? '#555' : '#333',
+            color: '#fff',
+            '&:hover': {
+                backgroundColor: '#444',
+            },
+        }),
+        multiValue: (provided) => ({
+            ...provided,
+            backgroundColor: '#555',
+            color: '#fff',
+        }),
+        multiValueLabel: (provided) => ({
+            ...provided,
+            color: '#fff',
+        }),
+        multiValueRemove: (provided) => ({
+            ...provided,
+            color: '#fff',
+            '&:hover': {
+                backgroundColor: '#777',
+            },
+        }),
+        input: (provided) => ({
+            ...provided,
+            color: '#fff',
+        }),
+        placeholder: (provided) => ({
+            ...provided,
+            color: '#aaa',
+        }),
+    };
+    
     return (
-        <div className="fixed top-0 left-0 right-0 bg-[#464444] flex items-center justify-between p-4 border-b border-black z-10">
-            <div className="flex items-center space-x-2">
-                {toggleState ? (
-                    <>
-                        <Select
-                            isMulti={false} // Set isMulti to false to allow only single selection
-                            value={countryOptions.find(option => option.value === selectedLocation)} // Update value based on selectedLocation
-                            onChange={setLocation}
-                            options={countryOptions}
-                            className="w-64"
-                        />
-                        <Select
-                            isMulti
-                            value={selectedCategories}
-                            onChange={setSelectedCategories}
-                            options={categoryOptions}
-                            className="w-64"
-                        />
-                        <button
-                            onClick={() => handleCreateGraph(selectedLocation,selectedCategories)}
-                            className="bg-green-500 hover:bg-green-700 text-white
-                            font-bold py-2 px-4 rounded"
-                        >
-                            Create Graph
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <Select
-                            isMulti
-                            value={selectedCategories}
-                            onChange={setSelectedCategories}
-                            options={categoryOptions}
-                            className="w-64"
-                        />
-                        <input
-                            type="date"
-                            value={selectedStartDate}
-                            onChange={handleStartDateChange}
-                            className="bg-white border rounded-md px-4 py-2"
-                            style={{ height: '2.5rem' }}
-                        />
-                        <input
-                            type="date"
-                            value={selectedEndDate}
-                            max={formattedDate}
-                            onChange={handleEndDateChange}
-                            className="bg-white border rounded-md px-4 py-2"
-                            style={{ height: '2.5rem' }}
-                        />
-                        {loading ? (
-                            <div className="loader"></div>
-                        ) : (
-                            <>
-                                <button
-                                    onClick={handleSetData}
-                                    className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${endDateError ? 'cursor-not-allowed opacity-50' : ''}`}
-                                    disabled={endDateError}
+        <div style={{position: 'relative'}} className="fixed top-0 left-0 right-0 bg-[#333333] flex flex-col items-center justify-between p-4 border-b border-gray-800 z-10">
+                <div style={{position: 'absolute', left: '20px' , top: '11px'}}  >
+                    <img src={SystemIcon} alt="System Icon"  style={{width: '55px' , height: '55px'}}  />
+                </div>
+                <div className="flex items-center space-x-2 ">
+                    {toggleState ? (
+                        <>
+                            <Select
+                                isMulti={false}
+                                value={countryOptions.find(option => option.value === selectedLocation)}
+                                onChange={setLocation}
+                                options={countryOptions}
+                                className="w-64"
+                                styles={customStyles} // Apply custom styles
+                            />
+                            <Select
+                                isMulti
+                                value={selectedCategories}
+                                onChange={setSelectedCategories}
+                                options={categoryOptions}
+                                className="w-64"
+                                styles={customStyles} // Apply custom styles
+                            />
+                            <button
+                                onClick={() => handleCreateGraph(selectedLocation, selectedCategories)}
+                                className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
                                 >
-                                    Get Data
-                                </button>
-                                {!customDataRequested && (
+                                Create Graph
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Select
+                                isMulti
+                                value={selectedCategories}
+                                onChange={setSelectedCategories}
+                                options={categoryOptions}
+                                className="w-64"
+                                styles={customStyles} // Apply custom styles
+                            />
+                            <input
+                                type="date"
+                                value={selectedStartDate}
+                                onChange={handleStartDateChange}
+                                className="bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white" // Dark mode styles
+                                style={{ height: '2.5rem' }}
+                            />
+                            <input
+                                type="date"
+                                value={selectedEndDate}
+                                max={formattedDate}
+                                onChange={handleEndDateChange}
+                                className="bg-gray-800 border border-gray-600 rounded-md px-4 py-2 text-white" // Dark mode styles
+                                style={{ height: '2.5rem' }}
+                            />
+                            {loading ? (
+                                <div className="loader"></div>
+                            ) : (
+                                <>
                                     <button
-                                        onClick={handleShowModal}
-                                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                                        onClick={handleSetData}
+                                        className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${endDateError ? 'cursor-not-allowed opacity-50' : ''}`}
+                                        disabled={endDateError}
                                     >
-                                        Get Custom Data
+                                        Get Data
                                     </button>
-                                )}
-                            </>
-                        )}
-                    </>
-                )}
-            </div>
-            <div>
-                <label className="mr-2 text-white">Statistics Mod:</label>
-                <label className="switch">
-                    <input type="checkbox" checked={toggleState} onChange={handleToggleChange} />
-                    <span className="slider round"></span>
-                </label>
-            </div>
+                                    {!customDataRequested && (
+                                        <button
+                                            onClick={handleShowModal}
+                                            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                                            >
+                                            Get Custom Data
+                                        </button>
+                                    )}
+                                </>
+                            )}
+                        </>
+                    )}
+                </div>
+                <div style={{position: 'absolute', right: '20px'}}  >
+                    <label className="mr-2 text-white">Statistics Mod:</label>
+                    <label className="switch">
+                        <input type="checkbox" checked={toggleState} onChange={handleToggleChange} />
+                        <span className="slider round"></span>
+                    </label>
+                </div>
+        
             {endDateError && <p className="text-white bg-red-600 text-center rounded-md py-1 px-2 mt-2">End date cannot be earlier than start date</p>}
             {categoryError && <p className="text-white bg-red-600 text-center rounded-md py-1 px-2 mt-2">Please select exactly one category</p>}
-
+        
             {showModal && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-20">
-                    <div className="bg-white p-4 rounded-md">
-                        <h2 className="text-lg font-bold mb-2">Select Channels</h2>
+                <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center z-20">
+                    <div className="bg-gray-800 p-4 rounded-md">
+                        <h2 className="text-lg font-bold mb-2 text-white">Select Channels</h2>
                         <div>
-                            <h3 className="font-semibold">GDELT Domains</h3>
+                            <h3 className="font-semibold text-white">GDELT Domains</h3>
                             <ul>
                                 {Object.keys(channelsData.GDELT_Domains).map(domain => (
                                     <li key={domain}>
-                                        <label>
+                                        <label className="text-white">
                                             <input
                                                 type="checkbox"
                                                 checked={selectedChannels.GDELT.includes(domain)}
@@ -306,11 +366,11 @@ const MapHeader = ({
                             </ul>
                         </div>
                         <div>
-                            <h3 className="font-semibold">Telegram Channels</h3>
+                            <h3 className="font-semibold text-white">Telegram Channels</h3>
                             <ul>
                                 {Object.keys(channelsData.Telegram_Channels).map(channel => (
                                     <li key={channel}>
-                                        <label>
+                                        <label className="text-white">
                                             <input
                                                 type="checkbox"
                                                 checked={selectedChannels.Telegram.includes(channel)}
@@ -325,13 +385,13 @@ const MapHeader = ({
                         <div className="flex justify-end space-x-2 mt-4">
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" // Red button style
                             >
                                 Cancel
                             </button>
                             <button
-                                onClick={() => handleGetCustomData}
-                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                onClick={handleGetCustomData}
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" // Blue button style
                             >
                                 Get Custom Data
                             </button>
@@ -346,7 +406,12 @@ const MapHeader = ({
                 />
             )}
         </div>
-    );
+        
+        );
+            
+        
+                    
+    
 };
 
 export default MapHeader;

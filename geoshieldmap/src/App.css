@@ -128,3 +128,49 @@ input:checked + .slider:before {
 .slider.round:before {
   border-radius: 50%;
 }
+
+/* Add these styles in your CSS file or component */
+.react-datepicker-wrapper {
+  display: inline-block;
+  width: 100%;
+}
+
+.react-datepicker__input-container {
+  width: 100%;
+}
+
+.react-datepicker {
+  font-family: inherit;
+  border: 0;
+  border-radius: 0.375rem;
+  background-color: #333;
+  color: #fff;
+}
+
+.react-datepicker__header {
+  background-color: #555;
+  border-bottom: 0;
+}
+
+.react-datepicker__current-month {
+  color: #fff;
+}
+
+.react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name {
+  color: #fff;
+}
+
+.react-datepicker__day--selected {
+  background-color: #555;
+  color: #fff;
+}
+
+.react-datepicker__day--keyboard-selected {
+  background-color: #777;
+  color: #fff;
+}
+
+.react-datepicker__day:hover {
+  background-color: #444;
+  color: #fff;
+}

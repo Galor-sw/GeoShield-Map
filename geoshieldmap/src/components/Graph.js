@@ -24,9 +24,7 @@ const Graph = ({ filteredData, selectedCategories, selectedLocation }) => {
     }, []);
 
     return (
-        <div>
-            <h2>Data for {selectedLocation} by categories: {selectedCategories.map(category => category.label).join(', ')}</h2>
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height={800}>
                 <LineChart
                     data={data}
                     margin={{
@@ -35,24 +33,32 @@ const Graph = ({ filteredData, selectedCategories, selectedLocation }) => {
                         left: 20,
                         bottom: 5,
                     }}
+                    style={{ backgroundColor: '#333' }} // Set background color to dark
                 >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    {selectedCategories.map((category, index) => (
-                        <Line
-                            key={index}
-                            type="monotone"
-                            dataKey={category.value}
-                            name={category.label}
-                            stroke={`#${Math.floor(Math.random()*16777215).toString(16)}`} // Generate random color
-                        />
-                    ))}
+                    <CartesianGrid strokeDasharray="3 3" stroke="#444" /> {/* Change grid color */}
+                    <XAxis dataKey="date" stroke="#ccc" /> {/* Change X-axis color */}
+                    <YAxis stroke="#ccc" /> {/* Change Y-axis color */}
+                    <Tooltip contentStyle={{ backgroundColor: '#555', borderColor: '#777', color: '#fff' }} /> {/* Change tooltip background and text color */}
+                    <Legend wrapperStyle={{ color: '#fff' }} /> {/* Change legend text color */}
+                    {selectedCategories.map((category, index) => {
+                        const brightColors = [
+                            "#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#FF8F33",
+                            "#33FFF3", "#B833FF", "#33FF8A", "#FF3333", "#FFEB33"
+                        ]; // Predefined set of bright colors
+                        return (
+                            <Line
+                                key={index}
+                                type="monotone"
+                                dataKey={category.value}
+                                name={category.label}
+                                stroke={brightColors[index % brightColors.length]} // Use bright colors
+                            />
+                        );
+                    })}
                 </LineChart>
             </ResponsiveContainer>
-        </div>
+
+
     );
 };
 
