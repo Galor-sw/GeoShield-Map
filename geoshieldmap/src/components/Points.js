@@ -48,7 +48,10 @@ const Points = ({ categories, startDate, endDate, uuid, setReceivedData }) => {
         };
     
         fetchData();
-    }, [categories, startDate, endDate, uuid]);
+    }, [uuid]);
+
+
+
     
     const mergeData = (mergedData, newData, category) => {
         return {

@@ -274,8 +274,8 @@ const MapHeader = ({
                                 value={selectedCategories}
                                 onChange={setSelectedCategories}
                                 options={categoryOptions}
-                                className="w-64"
-                                styles={customStyles} // Apply custom styles
+                                className="w-full" // Use full width class
+                                styles={{ ...customStyles, container: (base) => ({ ...base, width: '28rem' }) }} // Inline style for custom width
                             />
                             <button
                                 onClick={() => handleCreateGraph(selectedLocation, selectedCategories)}
@@ -291,9 +291,10 @@ const MapHeader = ({
                                 value={selectedCategories}
                                 onChange={setSelectedCategories}
                                 options={categoryOptions}
-                                className="w-64"
-                                styles={customStyles} // Apply custom styles
+                                className="w-full" // Use full width class
+                                styles={{ ...customStyles, container: (base) => ({ ...base, width: '28rem' }) }} // Inline style for custom width
                             />
+
                             <input
                                 type="date"
                                 value={selectedStartDate}

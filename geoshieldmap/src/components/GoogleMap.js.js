@@ -5,6 +5,7 @@ import { getGoogleMapsApiKey, getMapId } from './credentials';
 import MapHeader from './MapHeader';
 import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
 import gpsIcon from '../assets/icons/gps.png'; // Import the GPS icon
+import clearIcon from '../assets/icons/clear.png'; // Import the clear icon
 import Graph from './Graph.js'; // Import the Graph component
 
 const GoogleMapFunction = () => {
@@ -22,7 +23,6 @@ const GoogleMapFunction = () => {
     const [statisticMode, setStatisticMode] = useState(false);
     const [graphData, setGraphData] = useState(null); 
 
-
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: API_KEY,
         libraries: ['places'],
@@ -36,14 +36,12 @@ const GoogleMapFunction = () => {
 
     }, [selectedCategories]);
 
-
     const handleSetData = (e) => {
+        console.log("handleSetData");
         setGetData(prevState => !prevState);  // Toggle getData to force re-render
         setPointsVisible(true);
         setCustomUUID("");
     };
-
-
 
     const setCustomDataUUID = (e) => {
         console.log("in setCustomDataUUID");
@@ -51,7 +49,6 @@ const GoogleMapFunction = () => {
         setGetData(prevState => !prevState);  // Toggle getData to force re-render
         setPointsVisible(true);
     };
-
 
     const onMapLoad = mapInstance => {
         setMap(mapInstance);
@@ -97,11 +94,11 @@ const GoogleMapFunction = () => {
                     const locationKey = selectedLocation + '\n';
 
                     data[locationKey].forEach(categoryObject => {
-                        const existsCategory=Object.keys(categoryObject)[0];
+                        const existsCategory = Object.keys(categoryObject)[0];
 
                         selectedCategories.forEach(category =>
                             {
-                                if (category.value== existsCategory)
+                                if (category.value == existsCategory)
                                     {
                                         filteredData.push(categoryObject);
                                     }
@@ -123,9 +120,11 @@ const GoogleMapFunction = () => {
                 });
         }
     };
-    
-    
 
+    const handleClearPoints = () => {
+        setPointsVisible(false);
+    };
+    
     return (
         <div style={{ backgroundColor: '#333',position: 'relative', width: '100%', height: '100vh' }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
@@ -146,7 +145,7 @@ const GoogleMapFunction = () => {
                     handleCreateGraph={handleCreateGraph}
                 />
             </div>
-                {!statisticMode && (
+            {!statisticMode && (
                 <div style={{ position: 'absolute', top: '56px', left: 0, right: 0, bottom: 0 }}>
                     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                         <GoogleMap
@@ -196,11 +195,31 @@ const GoogleMapFunction = () => {
                         >
                             <img src={gpsIcon} alt="Search Location" style={{ width: '70%', height: '70%' }} />
                         </button>
+                        <button
+                            onClick={handleClearPoints}
+                            style={{
+                                position: 'absolute',
+                                bottom: 30,
+                                left: 70,
+                                zIndex: 1000,
+                                width: '40px',
+                                height: '40px',
+                                backgroundColor: '#fff',
+                                border: '1px solid #ccc',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+                            }}
+                        >
+                            <img src={clearIcon} alt="Clear Points" style={{ width: '70%', height: '70%' }} />
+                        </button>
                     </div>
                 </div>
-                )}
-
-                {statisticMode && graphData && (
+            )}
+            {statisticMode && graphData && (
                 <div style={{  position: 'absolute', left: 0, right: 0, bottom: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <div style={{ position: 'relative' ,width: '100%', height: '100%' }}>
                         <Graph
@@ -210,10 +229,9 @@ const GoogleMapFunction = () => {
                         />
                     </div>
                 </div>
-                )}
-            </div>
+            )}
+        </div>
     );
-    
 };
 
 const FloatingSearchBar = ({ onPlaceSelect }) => {
