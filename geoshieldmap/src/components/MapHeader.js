@@ -4,6 +4,7 @@ import IntervalHandler from './IntervalHandler'; // Import the IntervalHandler c
 import Select from 'react-select'; // Import react-select
 import countriesData from '../assets/Data/countries.json'; // Import the countries data
 import SystemIcon from '../assets/icons/logo_1.png';
+import ToggleButton from './ToggleButton.js';
 
 const channelsData = {
     "GDELT_Domains": {
@@ -189,7 +190,8 @@ const MapHeader = ({
         }
     };
 
-    const handleToggleChange = () => {
+    const handleToggleChange = (e) => {
+        console.log("handleToggleChange");
         setToggleState(prevState => !prevState); // Toggle the state
     };
 
@@ -333,14 +335,14 @@ const MapHeader = ({
                             )}
                         </>
                     )}
+                    {pointsVisible && <IconExplain />}
                 </div>
                 <div style={{position: 'absolute', right: '20px'}}  >
-                    <label className="mr-2 text-white">Statistics Mod:</label>
-                    <label className="switch">
-                        <input type="checkbox" checked={toggleState} onChange={handleToggleChange} />
-                        <span className="slider round"></span>
-                    </label>
-                </div>
+                <ToggleButton
+                    setToggleState={setToggleState} 
+                    toggleState={toggleState} 
+                />  
+            </div>
         
             {endDateError && <p className="text-white bg-red-600 text-center rounded-md py-1 px-2 mt-2">End date cannot be earlier than start date</p>}
             {categoryError && <p className="text-white bg-red-600 text-center rounded-md py-1 px-2 mt-2">Please select exactly one category</p>}

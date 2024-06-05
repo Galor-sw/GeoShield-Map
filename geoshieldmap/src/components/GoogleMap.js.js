@@ -7,7 +7,6 @@ import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocom
 import gpsIcon from '../assets/icons/gps.png'; // Import the GPS icon
 import clearIcon from '../assets/icons/clear.png'; // Import the clear icon
 import Graph from './Graph.js'; // Import the Graph component
-
 const GoogleMapFunction = () => {
     const API_KEY = getGoogleMapsApiKey();
     const mapId = getMapId();
@@ -36,17 +35,19 @@ const GoogleMapFunction = () => {
 
     }, [selectedCategories]);
 
-    const handleSetData = (e) => {
+    const handleSetData = async (e) => {
         console.log("handleSetData");
-        setGetData(prevState => !prevState);  // Toggle getData to force re-render
+        await handleClearPoints();
+        setGetData(true); 
         setPointsVisible(true);
         setCustomUUID("");
     };
 
-    const setCustomDataUUID = (e) => {
+    const setCustomDataUUID = async (e) => {
         console.log("in setCustomDataUUID");
+        await handleClearPoints();
         setCustomUUID(e);
-        setGetData(prevState => !prevState);  // Toggle getData to force re-render
+        setGetData(true);  
         setPointsVisible(true);
     };
 
@@ -170,6 +171,7 @@ const GoogleMapFunction = () => {
                                     categories={selectedCategories}
                                     uuid={customUUID}
                                     setReceivedData={setReceivedData}
+                                    getData={getData}
                                 />
                             )}
                         </GoogleMap>
