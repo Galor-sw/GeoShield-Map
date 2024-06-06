@@ -26,7 +26,7 @@ const categoryOptions = [
 
 const MapHeader = ({
     selectedCategories, setSelectedCategories, handleSetData, receivedData,
-    pointsVisible, setStartDate, setEndDate, setCustomDataUUID, setGetData, setReceivedData ,setStatisticMode ,handleCreateGraph
+    pointsVisible, setStartDate, setEndDate, setCustomDataUUID, setGetData, setReceivedData ,setStatisticMode ,handleCreateGraph ,graphDataReceived
 }) => {
     const [endDateError, setEndDateError] = useState(false);
     const [selectedStartDate, setSelectedStartDate] = useState("");
@@ -190,11 +190,6 @@ const MapHeader = ({
         }
     };
 
-    const handleToggleChange = (e) => {
-        console.log("handleToggleChange");
-        setToggleState(prevState => !prevState); // Toggle the state
-    };
-
 
 
     const setLocation =(e) =>
@@ -202,6 +197,14 @@ const MapHeader = ({
         console.log(e.value);
         if (e.value)
             setSelectedLocation(e.value);
+    };
+
+
+    const handleGetDataRequest = (e) =>
+    {
+      setReceivedData(false);
+      setLoading(true)
+      handleSetData();  
     };
     
 
@@ -279,12 +282,15 @@ const MapHeader = ({
                                 className="w-full" // Use full width class
                                 styles={{ ...customStyles, container: (base) => ({ ...base, width: '28rem' }) }} // Inline style for custom width
                             />
-                            <button
+                            {  !graphDataReceived ? (
+                                <div className="loader"></div>
+                            ) :
+                            (<button
                                 onClick={() => handleCreateGraph(selectedLocation, selectedCategories)}
                                 className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
                                 >
                                 Create Graph
-                            </button>
+                            </button> )}
                         </>
                     ) : (
                         <>
@@ -317,9 +323,9 @@ const MapHeader = ({
                             ) : (
                                 <>
                                     <button
-                                        onClick={handleSetData}
+                                        onClick={handleGetDataRequest}
                                         className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${endDateError ? 'cursor-not-allowed opacity-50' : ''}`}
-                                        disabled={endDateError}
+                                        disabled={endDateError}               
                                     >
                                         Get Data
                                     </button>

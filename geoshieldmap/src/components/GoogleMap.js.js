@@ -21,6 +21,7 @@ const GoogleMapFunction = () => {
     const [receivedData, setReceivedData] = useState(false);
     const [statisticMode, setStatisticMode] = useState(false);
     const [graphData, setGraphData] = useState(null); 
+    const [graphDataReceived, setGraphDataReceived] = useState(true); 
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: API_KEY,
@@ -75,6 +76,8 @@ const GoogleMapFunction = () => {
     };
 
     const handleCreateGraph = (selectedLocation, selectedCategories) => {
+        setGraphDataReceived(false);
+        setGraphData(null)
         // Gather selected locations
         // Make API GET call with selected locations as parameters
         if (selectedLocation) {
@@ -144,6 +147,7 @@ const GoogleMapFunction = () => {
                     setSearchVisible={setSearchVisible}
                     setStatisticMode={setStatisticMode}
                     handleCreateGraph={handleCreateGraph}
+                    graphDataReceived={graphDataReceived}
                 />
             </div>
             {!statisticMode && (
@@ -225,6 +229,7 @@ const GoogleMapFunction = () => {
                 <div style={{  position: 'absolute', left: 0, right: 0, bottom: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <div style={{ position: 'relative' ,width: '100%', height: '100%' }}>
                         <Graph
+                            setGraphDataReceived={setGraphDataReceived}
                             filteredData={graphData.filteredData}
                             selectedCategories={graphData.selectedCategories}
                             selectedLocation={graphData.selectedLocation}
