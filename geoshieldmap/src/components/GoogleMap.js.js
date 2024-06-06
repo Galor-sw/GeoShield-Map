@@ -92,8 +92,9 @@ const GoogleMapFunction = () => {
 
                     // Filter the data based on selected categories
                     const filteredData = [];
+                    const locationKey = selectedLocation + '\n';
 
-                    data[selectedLocation].forEach(categoryObject => {
+                    data[locationKey].forEach(categoryObject => {
                         const existsCategory = Object.keys(categoryObject)[0];
 
                         selectedCategories.forEach(category =>
