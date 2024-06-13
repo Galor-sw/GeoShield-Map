@@ -56,7 +56,7 @@ const Graph = ({ filteredData, selectedCategories, setGraphDataReceived }) => {
             >
                 <CartesianGrid strokeDasharray="3 3" stroke="#444" /> {/* Change grid color */}
                 <XAxis dataKey="date" stroke="#ccc" /> {/* Change X-axis color */}
-                <YAxis stroke="#ccc" /> {/* Change Y-axis color */}
+                <YAxis stroke="#ccc" label={{ value: 'Amount of Event', angle: -90, position: 'insideLeft', fill: '#ccc' }} /> {/* Change Y-axis color and add label */}
                 <Tooltip contentStyle={{ backgroundColor: '#555', borderColor: '#777', color: '#fff' }} /> {/* Change tooltip background and text color */}
                 <Legend wrapperStyle={{ color: '#fff' }} /> {/* Change legend text color */}
                 {selectedCategories.map((category, index) => {

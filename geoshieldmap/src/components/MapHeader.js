@@ -341,7 +341,7 @@ const MapHeader = ({
                             )}
                         </>
                     )}
-                    {pointsVisible && <IconExplain />}
+                    {pointsVisible && !toggleState && <IconExplain />}
                 </div>
                 <div style={{position: 'absolute', right: '20px'}}  >
                 <ToggleButton

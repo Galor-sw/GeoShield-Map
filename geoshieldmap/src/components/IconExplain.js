@@ -37,7 +37,7 @@ const IconExplain = () => {
     return (
         <div className="flex items-center h-full relative" ref={explanationRef}>
             <button onClick={toggleExplanation} className="text-white ml-4 focus:outline-none">
-                <img src={infoIcon} alt="Info" className="w-8 h-8" />
+                <img src={infoIcon} alt="Info" className="w-11 h-11" />
             </button>
             {showExplanation && (
                 <div className="bg-white p-3 rounded shadow-md absolute top-full left-0 z-10 w-max mt-2">
