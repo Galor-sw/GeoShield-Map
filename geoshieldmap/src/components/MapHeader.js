@@ -58,6 +58,9 @@ const MapHeader = ({
         const countries = sortedCountries.map(country => ({ value: country, label: country }));
     
         setCountryOptions(countries);
+
+        // Set default category to 'Security'
+        setSelectedCategories([{ value: 'security', label: 'Security' }]);
     }, []);
     
 
