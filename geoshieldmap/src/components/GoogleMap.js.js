@@ -76,52 +76,56 @@ const GoogleMapFunction = () => {
     };
 
     const handleCreateGraph = (selectedLocation, selectedCategories) => {
-        setGraphDataReceived(false);
-        setGraphData(null)
-        // Gather selected locations
-        // Make API GET call with selected locations as parameters
-        if (selectedLocation) {
-            fetch(`https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev/get_statistics?location=${selectedLocation}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Process the data received from the API
-                    console.log('Received data:', data);
-                    console.log('selectedCategories:', selectedCategories);
-
-                    // Filter the data based on selected categories
-                    const filteredData = [];
-
-                    data[selectedLocation].forEach(categoryObject => {
-                        const existsCategory = Object.keys(categoryObject)[0];
-
-                        selectedCategories.forEach(category =>
-                            {
-                                if (category.value == existsCategory)
-                                    {
-                                        filteredData.push(categoryObject);
-                                    }
-                            }
-                        )
+        const fetchData = () => {
+            setGraphDataReceived(false);
+            setGraphData(null);
     
+            // Gather selected locations
+            // Make API GET call with selected locations as parameters
+            if (selectedLocation) {
+                fetch(`https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev/get_statistics?location=${selectedLocation}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Process the data received from the API
+                        console.log('Received data:', data);
+                        console.log('selectedCategories:', selectedCategories);
+    
+                        // Filter the data based on selected categories
+                        const filteredData = [];
+    
+                        data[selectedLocation].forEach(categoryObject => {
+                            const existsCategory = Object.keys(categoryObject)[0];
+    
+                            selectedCategories.forEach(category => {
+                                if (category.value === existsCategory) {
+                                    filteredData.push(categoryObject);
+                                }
+                            });
+                        });
+    
+                        console.log('Filtered data:', filteredData);
+    
+                        // Set the filtered data to state
+                        setGraphData({
+                            filteredData,
+                            selectedCategories,
+                            selectedLocation,
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // Retry after 7 minutes
+                        setTimeout(fetchData, 420000);
                     });
-                    console.log('Filtered data:', filteredData);
-                    // Set the filtered data to state
-                    setGraphData({
-                        filteredData,
-                        selectedCategories,
-                        selectedLocation,
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    // Handle errors here
-                });
-        }
+            }
+        };
+    
+        fetchData();
     };
 
     const handleClearPoints = () => {
