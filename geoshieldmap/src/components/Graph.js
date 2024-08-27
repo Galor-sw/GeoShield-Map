@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+// Graph component for visualizing data
 const Graph = ({ filteredData, selectedCategories, setGraphDataReceived }) => {
+    // State to hold processed data for the chart
     const [data, setData] = useState([]);
 
     useEffect(() => {
+        // Indicate that graph data has been received
         setGraphDataReceived(true);
 
         // Collect all unique dates from filteredData
@@ -24,7 +27,7 @@ const Graph = ({ filteredData, selectedCategories, setGraphDataReceived }) => {
             return dataPoint;
         });
 
-        // Flatten the filteredData into an array of objects with date and count for each category
+        // Process the filteredData into a format suitable for the chart
         const data = selectedCategories.reduce((allData, category) => {
             const categoryName = category.value;
             const categoryDataObj = filteredData.find(data => data[categoryName]);
@@ -39,8 +42,15 @@ const Graph = ({ filteredData, selectedCategories, setGraphDataReceived }) => {
             return allData;
         }, initialData);
 
+        // Update the state with processed data
         setData(data);
     }, [filteredData, selectedCategories, setGraphDataReceived]);
+
+    // Predefined set of bright colors for the chart lines
+    const brightColors = [
+        "#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#FF8F33",
+        "#33FFF3", "#B833FF", "#33FF8A", "#FF3333", "#FFEB33"
+    ];
 
     return (
         <ResponsiveContainer width="100%" height={800}>
@@ -54,26 +64,35 @@ const Graph = ({ filteredData, selectedCategories, setGraphDataReceived }) => {
                 }}
                 style={{ backgroundColor: '#333' }} // Set background color to dark
             >
-                <CartesianGrid strokeDasharray="3 3" stroke="#444" /> {/* Change grid color */}
-                <XAxis dataKey="date" stroke="#ccc" /> {/* Change X-axis color */}
-                <YAxis stroke="#ccc" label={{ value: 'Amount of Event', angle: -90, position: 'insideLeft', fill: '#ccc' }} /> {/* Change Y-axis color and add label */}
-                <Tooltip contentStyle={{ backgroundColor: '#555', borderColor: '#777', color: '#fff' }} /> {/* Change tooltip background and text color */}
-                <Legend wrapperStyle={{ color: '#fff' }} /> {/* Change legend text color */}
-                {selectedCategories.map((category, index) => {
-                    const brightColors = [
-                        "#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#FF8F33",
-                        "#33FFF3", "#B833FF", "#33FF8A", "#FF3333", "#FFEB33"
-                    ]; // Predefined set of bright colors
-                    return (
-                        <Line
-                            key={index}
-                            type="monotone"
-                            dataKey={category.value}
-                            name={category.label}
-                            stroke={brightColors[index % brightColors.length]} // Use bright colors
-                        />
-                    );
-                })}
+                <CartesianGrid strokeDasharray="3 3" stroke="#444" /> {/* Grid lines */}
+                <XAxis dataKey="date" stroke="#ccc" /> {/* X-axis (dates) */}
+                <YAxis 
+                    stroke="#ccc" 
+                    label={{ 
+                        value: 'Amount of Event', 
+                        angle: -90, 
+                        position: 'insideLeft', 
+                        fill: '#ccc' 
+                    }} 
+                /> {/* Y-axis with label */}
+                <Tooltip 
+                    contentStyle={{ 
+                        backgroundColor: '#555', 
+                        borderColor: '#777', 
+                        color: '#fff' 
+                    }} 
+                /> {/* Tooltip for data points */}
+                <Legend wrapperStyle={{ color: '#fff' }} /> {/* Legend for categories */}
+                {/* Generate a Line for each selected category */}
+                {selectedCategories.map((category, index) => (
+                    <Line
+                        key={index}
+                        type="monotone"
+                        dataKey={category.value}
+                        name={category.label}
+                        stroke={brightColors[index % brightColors.length]} // Cycle through bright colors
+                    />
+                ))}
             </LineChart>
         </ResponsiveContainer>
     );

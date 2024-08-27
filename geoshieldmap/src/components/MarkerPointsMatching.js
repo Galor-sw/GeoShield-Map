@@ -3,16 +3,17 @@ import { Marker, InfoWindow } from '@react-google-maps/api';
 import goldIconSecurity from '../assets/icons/gold-security.png';
 import goldIconAntisemitism from '../assets/icons/gold-antisemitism.png';
 import goldIconNaturalDisasters from '../assets/icons/gold-natural-disasters.png';
-import { getGoogleMapsApiKey } from './credentials';
+import { getGoogleMapsApiKey ,getGoogleMapsAPIURL} from './credentials';
 
-const API_KEY = getGoogleMapsApiKey(); // Replace with your Google Maps API key
+// API key for Google Maps API
+const API_KEY = getGoogleMapsApiKey(); 
 const MAX_ICON_SIZE = 50; // Maximum size for the icon
 
 const MarkerPointsMatching = ({ jsonData, icon }) => {
-    const [markers, setMarkers] = useState([]);
-    const [activeMarker, setActiveMarker] = useState(null);
-    const [showDetails, setShowDetails] = useState(false);
-    const infoWindowRef = useRef(null);
+    const [markers, setMarkers] = useState([]); // State to store marker data
+    const [activeMarker, setActiveMarker] = useState(null); // State to track the currently active marker
+    const [showDetails, setShowDetails] = useState(false); // State to toggle details view
+    const infoWindowRef = useRef(null); // Ref for InfoWindow
 
     useEffect(() => {
         const fetchCoordinates = async () => {
@@ -23,10 +24,12 @@ const MarkerPointsMatching = ({ jsonData, icon }) => {
 
             const allPromises = [];
 
+            // Iterate over each item in jsonData
             jsonData.forEach(item => {
-                const category = item.classification;
+                const category = item.classification; // Category of the item
                 const keys = Object.keys(item);
 
+                // Iterate over each key in the item
                 keys.forEach(key => {
                     const entry = item[key];
                     if (!entry || !entry.location) {
@@ -35,8 +38,9 @@ const MarkerPointsMatching = ({ jsonData, icon }) => {
                     }
 
                     const location = entry.location;
-                    const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${API_KEY}`;
+                    const apiUrl = `${getGoogleMapsAPIURL()}/geocode/json?address=${encodeURIComponent(location)}&key=${API_KEY}`;
 
+                    // Fetch coordinates for the location
                     const promise = fetch(apiUrl)
                         .then(response => {
                             if (!response.ok) {
@@ -68,24 +72,25 @@ const MarkerPointsMatching = ({ jsonData, icon }) => {
                 });
             });
 
+            // Resolve all promises and filter out null results
             const resolvedMarkers = await Promise.all(allPromises);
             setMarkers(resolvedMarkers.filter(marker => marker !== null));
         };
 
         fetchCoordinates();
-    }, [jsonData, icon]);
+    }, [jsonData, icon]); // Re-fetch coordinates if jsonData or icon changes
 
     const handleMarkerClick = (marker) => {
-        setActiveMarker(marker);
-        setShowDetails(false);
+        setActiveMarker(marker); // Set the clicked marker as active
+        setShowDetails(false); // Close details view on marker click
     };
 
     const handleCloseInfoWindow = () => {
-        setActiveMarker(null);
+        setActiveMarker(null); // Close the InfoWindow
     };
 
     const toggleDetails = () => {
-        setShowDetails(!showDetails);
+        setShowDetails(!showDetails); // Toggle details view
     };
 
     const getMarkerIcon = (category, score) => {
@@ -110,21 +115,21 @@ const MarkerPointsMatching = ({ jsonData, icon }) => {
 
         return {
             url: iconUrl,
-            scaledSize: new window.google.maps.Size(size, size),
+            scaledSize: new window.google.maps.Size(size, size), // Scale the icon size
         };
     };
 
     const handleOutsideClick = (event) => {
         if (infoWindowRef.current && !infoWindowRef.current.contains(event.target)) {
-            setActiveMarker(null);
+            setActiveMarker(null); // Close the InfoWindow if click is outside
         }
     };
 
     useEffect(() => {
-        document.addEventListener('mousedown', handleOutsideClick);
+        document.addEventListener('mousedown', handleOutsideClick); // Add event listener to handle clicks outside the InfoWindow
 
         return () => {
-            document.removeEventListener('mousedown', handleOutsideClick);
+            document.removeEventListener('mousedown', handleOutsideClick); // Clean up event listener on component unmount
         };
     }, []);
 

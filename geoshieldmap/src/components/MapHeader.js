@@ -5,29 +5,36 @@ import Select from 'react-select'; // Import react-select
 import countriesData from '../assets/Data/countries.json'; // Import the countries data
 import SystemIcon from '../assets/icons/logo_1.png';
 import ToggleButton from './ToggleButton.js';
+import {getAWSServiceURL,getAPIAWS} from './credentials.js'; // Import credentials functions
 
-const channelsData = {
-    "GDELT_Domains": {
-        " BBC": "bbc.com",
-        " CNN": "cnn.com",
-        " Ynet": "ynetnews.com"
-    },
-    "Telegram_Channels": {
-        " Abu-ali": "https://t.me/englishabuali",
-        " Reuters": "https://t.me/ReutersWorldChannel"
-    }
-};
 
-const categoryOptions = [
-    { value: 'security', label: 'Security' },
-    { value: 'antisemitism', label: 'Antisemitism' },
-    { value: 'natural-disasters', label: 'Natural-Disasters' }
-];
 
+/**
+ * MapHeader Component
+ * 
+ * This component renders the header of the map interface, including various controls
+ * for data selection, date range picking, and custom data retrieval.
+ *
+ * @param {Object} props
+ * @param {Array} props.selectedCategories - Currently selected categories
+ * @param {Function} props.setSelectedCategories - Function to update selected categories
+ * @param {Function} props.handleSetData - Function to handle data setting
+ * @param {boolean} props.receivedData - Flag indicating if data has been received
+ * @param {boolean} props.pointsVisible - Flag indicating if map points are visible
+ * @param {Function} props.setStartDate - Function to set start date
+ * @param {Function} props.setEndDate - Function to set end date
+ * @param {Function} props.setCustomDataUUID - Function to set custom data UUID
+ * @param {Function} props.setGetData - Function to trigger data fetching
+ * @param {Function} props.setReceivedData - Function to update received data status
+ * @param {Function} props.setStatisticMode - Function to set statistic mode
+ * @param {Function} props.handleCreateGraph - Function to handle graph creation
+ * @param {boolean} props.graphDataReceived - Flag indicating if graph data has been received
+ */
 const MapHeader = ({
     selectedCategories, setSelectedCategories, handleSetData, receivedData,
-    pointsVisible, setStartDate, setEndDate, setCustomDataUUID, setGetData, setReceivedData ,setStatisticMode ,handleCreateGraph ,graphDataReceived
+    pointsVisible, setStartDate, setEndDate, setCustomDataUUID, setGetData, setReceivedData, setStatisticMode, handleCreateGraph, graphDataReceived
 }) => {
+    // State variables
     const [endDateError, setEndDateError] = useState(false);
     const [selectedStartDate, setSelectedStartDate] = useState("");
     const [selectedEndDate, setSelectedEndDate] = useState("");
@@ -36,51 +43,77 @@ const MapHeader = ({
         GDELT: [],
         Telegram: []
     });
-    const [loading, setLoading] = useState(false); // State for loading
-    const [customDataRequested, setCustomDataRequested] = useState(false); // State for custom data requested
-    const [startListening, setStartListening] = useState(false); // State for SQS listening
+    const [loading, setLoading] = useState(false);
+    const [customDataRequested, setCustomDataRequested] = useState(false);
+    const [startListening, setStartListening] = useState(false);
     const [uuid, setUuid] = useState(null);
-    const [categoryError, setCategoryError] = useState(false); // State for category error message
-    const [toggleState, setToggleState] = useState(false); // State for the toggle switch
-    const [countryOptions, setCountryOptions] = useState([]); // State for country options
+    const [categoryError, setCategoryError] = useState(false);
+    const [toggleState, setToggleState] = useState(false);
+    const [countryOptions, setCountryOptions] = useState([]);
     const [selectedLocation, setSelectedLocation] = useState("Israel");
+    const [categoryOptions, setCategoryOptions] = useState([]);
     const today = new Date();
     const formattedDate = today.toISOString().split('T')[0];
+    const [channelsData, setChannelsData] = useState({
+        GDELT_Domains: {},
+        Telegram_Channels: {}
+    });
 
+    // Effect hooks
     useEffect(() => {
+        // Initialize dates and fetch country and category options
         setSelectedStartDate(formattedDate);
         setSelectedEndDate(formattedDate);
         setEndDate(formattedDate);
         setStartDate(formattedDate);
     
-        // Sort countries in alphabetical order from largest to smallest
         const sortedCountries = countriesData.countries.sort((a, b) => a.localeCompare(b));
         const countries = sortedCountries.map(country => ({ value: country, label: country }));
-    
         setCountryOptions(countries);
 
-        // Set default category to 'Security'
-        setSelectedCategories([{ value: 'security', label: 'Security' }]);
+        const fetchCategoryOptions = async () => {
+            try {
+                const response = await fetch(`${getAWSServiceURL()}/get-categories`);
+                const data = await response.json();
+                const options = data.categories.map(category => ({
+                    value: category.value,
+                    label: category.label
+                }));                
+                setCategoryOptions(options);
+                setSelectedCategories([{ value: 'security', label: 'Security' }]);
+            } catch (error) {
+                console.error('Error fetching category options:', error);
+            }
+        };
+
+        fetchCategoryOptions();
     }, []);
     
+    useEffect(() => {
+        // Fetch channels data
+        const fetchChannelsData = async () => {
+            try {
+                const response = await fetch(`${getAWSServiceURL()}/get-sources`);
+                const data = await response.json();
+                setChannelsData(data);
+            } catch (error) {
+                console.error('Error fetching channels data:', error);
+            }
+        };
+
+        fetchChannelsData();
+    }, []);
 
     useEffect(() => {
-        console.log('receivedData has changed:', receivedData);
         if (receivedData === true)
             setLoading(false);
-
     }, [receivedData]);
 
     useEffect(() => {
-        console.log('Toggle state:', toggleState); // Print the toggle state
         setStatisticMode(toggleState);
     }, [toggleState]);
 
-    useEffect(() => {
-        console.log('selectedLocation has changed:', selectedLocation);
-
-    }, [selectedLocation]);
-
+    // Handler functions
     const handleSuccessReceived = (uuid) => {
         console.log('Success message received with uuid: ', uuid);
         setCustomDataUUID(uuid)
@@ -121,13 +154,12 @@ const MapHeader = ({
     };
 
     const handleGetCustomData = async () => {
-        // Ensure only one category is selected
         if (selectedCategories.length !== 1) {
             setCategoryError(true);
             return;
         }
 
-        setCategoryError(false); // Reset category error message
+        setCategoryError(false);
 
         const selectedCategory = selectedCategories[0].value;
 
@@ -147,12 +179,12 @@ const MapHeader = ({
             ...filteredChannelsData
         };
 
-        setLoading(true); // Start loading
-        setShowModal(false); // Close modal
+        setLoading(true);
+        setShowModal(false);
         setGetData(false);
         setReceivedData(false);
         try {
-            const response = await fetch('https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev/set_config', {
+            const response = await fetch(`${getAPIAWS()}/set_config`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -164,11 +196,9 @@ const MapHeader = ({
                 throw new Error('Network response was not ok');
             }
             const responseData = await response.json();
-            console.log('Response:', responseData);
             let uuid;
             if (responseData.message === 'Configuration saved successfully and data_collection Lambda called') {
                 uuid = responseData.uuid;
-                console.log("Start listening to custom data SQS");
                 setUuid(uuid);
                 setCustomDataRequested(true);
                 setStartListening(true);
@@ -180,7 +210,7 @@ const MapHeader = ({
 
         } catch (error) {
             console.error('Error:', error);
-            setLoading(false); // Stop loading on error
+            setLoading(false);
         }
     };
 
@@ -193,18 +223,12 @@ const MapHeader = ({
         }
     };
 
-
-
-    const setLocation =(e) =>
-    {
-        console.log(e.value);
+    const setLocation = (e) => {
         if (e.value)
             setSelectedLocation(e.value);
     };
 
-
-    const handleGetDataRequest = (e) =>
-    {
+    const handleGetDataRequest = (e) => {
       setReceivedData(false);
       setLoading(true)
       handleSetData();  

@@ -12,15 +12,16 @@ import blueAntisemitismIcon from '../assets/icons/blue-antisemitism.png';
 // Natural Disasters Icons
 import redNaturalDisastersIcon from '../assets/icons/red-natural-disasters.png';
 import blueNaturalDisastersIcon from '../assets/icons/blue-natural-disasters.png';
-import { getGoogleMapsApiKey } from './credentials';
+import { getGoogleMapsApiKey, getGoogleMapsAPIURL } from './credentials';
 
-const API_KEY = getGoogleMapsApiKey(); // Replace with your Google Maps API key
+// API key for Google Maps API
+const API_KEY = getGoogleMapsApiKey(); 
 
 const MarkerPoints = ({ jsonData, icon }) => {
-    const [markers, setMarkers] = useState([]);
-    const [activeMarker, setActiveMarker] = useState(null);
-    const [showDetails, setShowDetails] = useState(false);
-    const infoWindowRef = useRef(null);
+    const [markers, setMarkers] = useState([]); // State to store markers
+    const [activeMarker, setActiveMarker] = useState(null); // State to track the currently active marker
+    const [showDetails, setShowDetails] = useState(false); // State to toggle details view
+    const infoWindowRef = useRef(null); // Ref for InfoWindow
     const map = useGoogleMap(); // Get the map instance
 
     useEffect(() => {
@@ -33,6 +34,7 @@ const MarkerPoints = ({ jsonData, icon }) => {
 
             setMarkers([]); // Clear markers before fetching new coordinates
 
+            // Fetch coordinates for each item in jsonData
             const promises = jsonData.map(async (item) => {
                 const location = item.location;
                 if (!location) {
@@ -40,7 +42,7 @@ const MarkerPoints = ({ jsonData, icon }) => {
                     return null; // Skip if location is missing
                 }
 
-                const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${API_KEY}`;
+                const apiUrl = `${getGoogleMapsAPIURL()}/geocode/json?address=${encodeURIComponent(location)}&key=${API_KEY}`;
                 const response = await fetch(apiUrl);
                 const data = await response.json();
 
@@ -60,12 +62,13 @@ const MarkerPoints = ({ jsonData, icon }) => {
                 return null;
             });
 
+            // Resolve all promises and filter out null results
             const resolvedMarkers = await Promise.all(promises);
             setMarkers(resolvedMarkers.filter(marker => marker !== null));
         };
 
         fetchCoordinates();
-    }, [jsonData]);
+    }, [jsonData]); // Re-fetch coordinates if jsonData changes
 
     const handleMarkerClick = (marker) => {
         setActiveMarker(marker);
@@ -86,14 +89,15 @@ const MarkerPoints = ({ jsonData, icon }) => {
     };
 
     const handleCloseInfoWindow = () => {
-        setActiveMarker(null);
+        setActiveMarker(null); // Close the InfoWindow
     };
 
     const toggleDetails = () => {
-        setShowDetails(!showDetails);
+        setShowDetails(!showDetails); // Toggle details view
     };
 
     const getMarkerIcon = (iconString, category) => {
+        // Determine which icon to use based on the category and iconString
         const security = category === 'security';
         const antisemitism = category === 'antisemitism';
         const naturalDisasters = category === 'natural-disasters';
@@ -135,6 +139,7 @@ const MarkerPoints = ({ jsonData, icon }) => {
     }, []);
 
     const renderMessage = (item) => {
+        // Render message details or a summary based on showDetails state
         const { event_breakdown, date, title, message, url } = item;
         if (showDetails) {
             return (

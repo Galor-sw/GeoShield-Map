@@ -1,31 +1,35 @@
-import { getAWSCredentials } from "./credentials"; // Import the getAWSCredentials function
+import { getAWSCredentials } from "./credentials"; // Import the getAWSCredentials function to retrieve AWS credentials
 
 import { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } from '@aws-sdk/client-sqs';
+import { getSQSURL } from './credentials.js'; // Import credentials functions to get SQS URL
 
 const awsCredentials = getAWSCredentials(); // Retrieve AWS credentials from credentials.js
 
+// Create an SQS client with the AWS credentials and region
 const sqsClient = new SQSClient({
     region: awsCredentials.region,
     credentials: awsCredentials.credentials,
 });
 
-const queueUrl = 'https://sqs.eu-west-1.amazonaws.com/637423308941/api_queue';
-let intervalId = null; // Store interval ID
-let isListening = false; // Flag to control the SQS listener
+const queueUrl = `${getSQSURL()}`; // Get the SQS queue URL
+let intervalId = null; // Store interval ID for polling
+let isListening = false; // Flag to control whether SQS listener is active
 
-const listenSqs = async (handleSuccessReceived, uuid ,setRelevantMessageReceived) => {
+// Function to start listening to SQS queue
+const listenSqs = async (handleSuccessReceived, uuid, setRelevantMessageReceived) => {
     console.log('Listening to SQS...');
-    if (isListening) return; // Return if already listening
+    if (isListening) return; // Return if already listening to avoid multiple listeners
 
-    isListening = true; // Start listening
+    isListening = true; // Mark as listening
 
     const pollInterval = 15000; // Polling interval set to 15 seconds
 
     intervalId = setInterval(async () => {
         try {
+            // Create a command to receive messages from the SQS queue
             const command = new ReceiveMessageCommand({
-                MaxNumberOfMessages: 1,
-                QueueUrl: queueUrl,
+                MaxNumberOfMessages: 1, // Receive a maximum of one message per request
+                QueueUrl: queueUrl, // URL of the SQS queue
                 WaitTimeSeconds: 20, // Increase wait time for longer polling
             });
 
@@ -33,7 +37,7 @@ const listenSqs = async (handleSuccessReceived, uuid ,setRelevantMessageReceived
 
             if (result.Messages && result.Messages.length > 0) {
                 const message = result.Messages[0];
-                const messageBody = JSON.parse(message.Body);
+                const messageBody = JSON.parse(message.Body); // Parse the message body from JSON
 
                 console.log('Received SQS Message:', messageBody);
 
@@ -45,14 +49,16 @@ const listenSqs = async (handleSuccessReceived, uuid ,setRelevantMessageReceived
                     const snsMessage = JSON.parse(messageBody.Message);
                     const objectKey = snsMessage.Records[0].s3.object.key;
 
-                    console.log(snsMessage.Records[0].s3.object.key)
-                    console.log(uuid)
+                    console.log(snsMessage.Records[0].s3.object.key);
+                    console.log(uuid);
+
+                    // Check if the objectKey contains the UUID to identify relevant messages
                     if (objectKey.includes(uuid)) {
                         console.log('Relevant message received:', snsMessage);
-                        setRelevantMessageReceived(true); // Update the state variable
+                        setRelevantMessageReceived(true); // Update the state variable to indicate relevant message received
                         handleSuccessReceived(uuid); // Trigger callback on success message
                         await deleteMessage(message.ReceiptHandle); // Delete the message from SQS
-                        stopListening(); // Stop the listener interval
+                        stopListening(); // Stop the polling interval
                     } else {
                         console.log('Received message does not contain the correct UUID, continue listening...');
                     }
@@ -60,23 +66,25 @@ const listenSqs = async (handleSuccessReceived, uuid ,setRelevantMessageReceived
             }
         } catch (error) {
             console.error('Error receiving SQS message:', error);
-            stopListening(); // Stop the listener interval on error
+            stopListening(); // Stop the polling interval on error
         }
     }, pollInterval);
 };
 
+// Function to delete a message from the SQS queue
 const deleteMessage = async (receiptHandle) => {
     const deleteCommand = new DeleteMessageCommand({
-        QueueUrl: queueUrl,
-        ReceiptHandle: receiptHandle,
+        QueueUrl: queueUrl, // URL of the SQS queue
+        ReceiptHandle: receiptHandle, // Receipt handle of the message to delete
     });
 
-    await sqsClient.send(deleteCommand);
+    await sqsClient.send(deleteCommand); // Send the delete command to SQS
 };
 
+// Function to stop listening to the SQS queue
 const stopListening = () => {
-    clearInterval(intervalId); // Clear the interval
-    isListening = false; // Update the flag to stop listening
+    clearInterval(intervalId); // Clear the interval to stop polling
+    isListening = false; // Update the flag to indicate that listening has stopped
 };
 
-export default listenSqs;
+export default listenSqs; // Export the listenSqs function for use in other modules

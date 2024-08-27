@@ -4,10 +4,14 @@ import Points from './Points';
 import { getGoogleMapsApiKey, getMapId } from './credentials';
 import MapHeader from './MapHeader';
 import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
-import gpsIcon from '../assets/icons/gps.png'; // Import the GPS icon
-import clearIcon from '../assets/icons/clear.png'; // Import the clear icon
-import Graph from './Graph.js'; // Import the Graph component
+import gpsIcon from '../assets/icons/gps.png';
+import clearIcon from '../assets/icons/clear.png';
+import Graph from './Graph.js';
+import {getAPIAWS } from './credentials.js';
+
+// Main component for rendering the Google Map and associated functionality
 const GoogleMapFunction = () => {
+    // State variables
     const API_KEY = getGoogleMapsApiKey();
     const mapId = getMapId();
     const [getData, setGetData] = useState(false);
@@ -23,19 +27,22 @@ const GoogleMapFunction = () => {
     const [graphData, setGraphData] = useState(null); 
     const [graphDataReceived, setGraphDataReceived] = useState(true); 
 
+    // Load Google Maps API
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: API_KEY,
         libraries: ['places'],
     });
 
+    // Effect hooks for logging state changes
     useEffect(() => {
         console.log("getData: " + getData);
     }, [getData]);
+
     useEffect(() => {
         console.log('selectedCategories has changed:', selectedCategories);
-
     }, [selectedCategories]);
 
+    // Handler for setting data and clearing points
     const handleSetData = async (e) => {
         console.log("handleSetData");
         await handleClearPoints();
@@ -44,6 +51,7 @@ const GoogleMapFunction = () => {
         setCustomUUID("");
     };
 
+    // Handler for setting custom UUID data
     const setCustomDataUUID = async (e) => {
         console.log("in setCustomDataUUID");
         await handleClearPoints();
@@ -52,22 +60,25 @@ const GoogleMapFunction = () => {
         setPointsVisible(true);
     };
 
+    // Handler for map load event
     const onMapLoad = mapInstance => {
         setMap(mapInstance);
     };
 
+    // Handler for place selection in search
     const handlePlaceSelect = async (address) => {
         const results = await getGeocode({ address });
         const { lat, lng } = await getLatLng(results[0]);
         map.panTo({ lat, lng });
-        map.setZoom(6); // Adjust the zoom level here to ensure the entire country is visible
+        map.setZoom(6);
     };
 
+    // Loading state
     if (!isLoaded) {
         return <div className='h-72 w-72 bg-red'>Loading...</div>;
     }
 
-    // Define the world bounds
+    // Define world bounds for map restriction
     const worldBounds = {
         north: 85,
         south: -85,
@@ -75,15 +86,14 @@ const GoogleMapFunction = () => {
         east: 180,
     };
 
+    // Handler for creating graph data
     const handleCreateGraph = (selectedLocation, selectedCategories) => {
         const fetchData = () => {
             setGraphDataReceived(false);
             setGraphData(null);
     
-            // Gather selected locations
-            // Make API GET call with selected locations as parameters
             if (selectedLocation) {
-                fetch(`https://bxjdwomca6.execute-api.eu-west-1.amazonaws.com/dev/get_statistics?location=${selectedLocation}`)
+                fetch(`${getAPIAWS()}/get_statistics?location=${selectedLocation}`)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Network response was not ok');
@@ -91,11 +101,10 @@ const GoogleMapFunction = () => {
                         return response.json();
                     })
                     .then(data => {
-                        // Process the data received from the API
                         console.log('Received data:', data);
                         console.log('selectedCategories:', selectedCategories);
     
-                        // Filter the data based on selected categories
+                        // Filter data based on selected categories
                         const filteredData = [];
     
                         data[selectedLocation].forEach(categoryObject => {
@@ -110,7 +119,6 @@ const GoogleMapFunction = () => {
     
                         console.log('Filtered data:', filteredData);
     
-                        // Set the filtered data to state
                         setGraphData({
                             filteredData,
                             selectedCategories,
@@ -128,12 +136,14 @@ const GoogleMapFunction = () => {
         fetchData();
     };
 
+    // Handler for clearing points
     const handleClearPoints = () => {
         setPointsVisible(false);
     };
     
     return (
         <div style={{ backgroundColor: '#333',position: 'relative', width: '100%', height: '100vh' }}>
+            {/* Map Header Component */}
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
                 <MapHeader
                     selectedCategories={selectedCategories}
@@ -153,6 +163,7 @@ const GoogleMapFunction = () => {
                     graphDataReceived={graphDataReceived}
                 />
             </div>
+            {/* Google Map Component */}
             {!statisticMode && (
                 <div style={{ position: 'absolute', top: '56px', left: 0, right: 0, bottom: 0 }}>
                     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -171,6 +182,7 @@ const GoogleMapFunction = () => {
                             }}
                             onLoad={onMapLoad}
                         >
+                            {/* Render Points component when visible */}
                             {pointsVisible && (
                                 <Points 
                                     startDate={startDate}
@@ -182,7 +194,9 @@ const GoogleMapFunction = () => {
                                 />
                             )}
                         </GoogleMap>
+                        {/* Render FloatingSearchBar when search is visible */}
                         {searchVisible && <FloatingSearchBar onPlaceSelect={handlePlaceSelect} />}
+                        {/* GPS button */}
                         <button
                             onClick={() => setSearchVisible(!searchVisible)}
                             style={{
@@ -204,6 +218,7 @@ const GoogleMapFunction = () => {
                         >
                             <img src={gpsIcon} alt="Search Location" style={{ width: '70%', height: '70%' }} />
                         </button>
+                        {/* Clear points button */}
                         <button
                             onClick={handleClearPoints}
                             style={{
@@ -228,6 +243,7 @@ const GoogleMapFunction = () => {
                     </div>
                 </div>
             )}
+            {/* Render Graph component in statistic mode */}
             {statisticMode && graphData && (
                 <div style={{  position: 'absolute', left: 0, right: 0, bottom: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <div style={{ position: 'relative' ,width: '100%', height: '100%' }}>
@@ -244,6 +260,7 @@ const GoogleMapFunction = () => {
     );
 };
 
+// Component for rendering a floating search bar
 const FloatingSearchBar = ({ onPlaceSelect }) => {
     const {
         ready,
@@ -258,16 +275,19 @@ const FloatingSearchBar = ({ onPlaceSelect }) => {
         debounce: 300,
     });
 
+    // Handler for input change
     const handleInput = (e) => {
         setValue(e.target.value);
     };
 
+    // Handler for place selection
     const handleSelect = async (address) => {
         setValue(address, false);
         clearSuggestions();
         onPlaceSelect(address);
     };
 
+    // Styles for the search bar and suggestions
     const containerStyle = {
         position: 'absolute',
         top: 50,
