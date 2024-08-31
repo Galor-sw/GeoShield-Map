@@ -1,70 +1,50 @@
-# Getting Started with Create React App
+#GEOSHIELD frontal
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Descripción general
+La interfaz de GEOSHIELD es una interfaz de usuario creada con **React** y **Google Maps** para proporcionar una forma interactiva e intuitiva para que los usuarios visualicen, filtren y analicen datos relacionados con amenazas a la seguridad, antisemitismo y desastres naturales. La interfaz de usuario integra varias llamadas API al sistema back-end para recuperar y mostrar datos.
 
-## Available Scripts
+##Tecnologías clave
+- **React**: el marco principal utilizado para construir la interfaz.
+- **Google Maps**: se utiliza para representar la interfaz del mapa interactivo y mostrar datos geoespaciales.
 
-In the project directory, you can run:
+##Componentes
+La base del código de front-end está organizada en varios componentes ubicados en el directorio `geoshieldmap/src/components/`. A continuación se muestra una explicación de cada componente:
 
-### `npm start`
+### elementos del mapa
+- **GoogleMap.js**:
+ El componente principal responsable de representar el mapa de Google y proporcionar funciones relacionadas, como hacer zoom, desplazarse e interactuar con marcadores del mapa.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **MarcadorPoints.js**:
+ Maneja la visualización de puntos fijos en el mapa, que representan información básica recopilada de diversas fuentes.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **MarkerPointsMatching.js**:
+ Gestiona la visualización de puntos de datos coincidentes que representan datos coincidentes dentro del sistema.
 
-### `npm test`
+### Componentes de visualización de datos
+- **Graph.js**:
+ Un componente de visualización de datos que utiliza varios tipos de gráficos, lo que permite a los usuarios ver tendencias y patrones en los datos recopilados.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **IconExplain.js**:
+ Este componente importa íconos para diferentes categorías de datos y muestra una leyenda (o "menú bíblico") para ayudar a los usuarios a comprender los símbolos y categorías del mapa.
 
-### `npm run build`
+### Título y controles
+- **MapHeader.js**:
+ Muestra el título de la interfaz del mapa, incluidos controles para seleccionar datos, seleccionar un rango de fechas y opciones para la recuperación de datos personalizados.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Componentes de manejo de datos
+- **IntervalHandler.js**:
+ Gestiona comprobaciones periódicas de la cola SQS en busca de mensajes relevantes. Utiliza intervalos para llamar repetidamente a la función 'listenSqs' y manejar las respuestas, asegurando actualizaciones de datos en tiempo real.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- **Puntos.js**:
+ Maneja varias llamadas API para obtener información filtrada del backend, según criterios seleccionados por el usuario, como rangos de fechas, categorías y geografías.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- **Sqs.js**:
+ Supervise los datos entrantes escuchando una cola SQS. Espera notificaciones que indiquen que datos específicos están listos para mostrarse, lo que garantiza que el usuario reciba la información más actualizada.
 
-### `npm run eject`
+## El comienzo del trabajo.
+Para comenzar con la placa frontal GEOSHIELD:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. Duplica este repositorio.
+2. Navegue hasta el directorio `geoshieldmap`.
+3. Instale las dependencias ejecutando `npm install`.
+4. Inicie el servidor de desarrollo con `npm start`.
