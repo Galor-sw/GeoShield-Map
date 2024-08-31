@@ -1,50 +1,50 @@
-#GEOSHIELD frontal
+# GEOSHIELD front
 
-## Descripción general
-La interfaz de GEOSHIELD es una interfaz de usuario creada con **React** y **Google Maps** para proporcionar una forma interactiva e intuitiva para que los usuarios visualicen, filtren y analicen datos relacionados con amenazas a la seguridad, antisemitismo y desastres naturales. La interfaz de usuario integra varias llamadas API al sistema back-end para recuperar y mostrar datos.
+## Overview
+The GEOSHIELD frontend is a user interface built using **React** and **Google Maps** to provide an interactive and intuitive way for users to visualize, filter and analyze data related to security threats, antisemitism and natural disasters. The user interface integrates various API calls to the back-end system to fetch and display data.
 
-##Tecnologías clave
-- **React**: el marco principal utilizado para construir la interfaz.
-- **Google Maps**: se utiliza para representar la interfaz del mapa interactivo y mostrar datos geoespaciales.
+##Key technologies
+- **React**: the main framework used to build the frontend.
+- **Google Maps**: Used to render the interactive map interface and display geospatial data.
 
-##Componentes
-La base del código de front-end está organizada en varios componentes ubicados en el directorio `geoshieldmap/src/components/`. A continuación se muestra una explicación de cada componente:
+##Components
+The front-end code base is organized into several components located in the `geoshieldmap/src/components/` directory. Below is an explanation of each component:
 
-### elementos del mapa
+### map elements
 - **GoogleMap.js**:
- El componente principal responsable de representar el mapa de Google y proporcionar funciones relacionadas, como hacer zoom, desplazarse e interactuar con marcadores del mapa.
+ The main component responsible for rendering the Google Map and providing related functionality such as zooming, panning and interacting with map markers.
 
-- **MarcadorPoints.js**:
- Maneja la visualización de puntos fijos en el mapa, que representan información básica recopilada de diversas fuentes.
+- **MarkerPoints.js**:
+ Handles the display of fixed points on the map, which represent basic information collected from various sources.
 
 - **MarkerPointsMatching.js**:
- Gestiona la visualización de puntos de datos coincidentes que representan datos coincidentes dentro del sistema.
+ Manages the display of matched data points that represent matched data within the system.
 
-### Componentes de visualización de datos
+### Data visualization components
 - **Graph.js**:
- Un componente de visualización de datos que utiliza varios tipos de gráficos, lo que permite a los usuarios ver tendencias y patrones en los datos recopilados.
+ A data visualization component using various types of graphs, allowing users to see trends and patterns in the collected data.
 
 - **IconExplain.js**:
- Este componente importa íconos para diferentes categorías de datos y muestra una leyenda (o "menú bíblico") para ayudar a los usuarios a comprender los símbolos y categorías del mapa.
+ This component imports icons for different data categories and displays a legend (or "bible menu") to help users understand the map's symbols and categories.
 
-### Título y controles
+### Title and controls
 - **MapHeader.js**:
- Muestra el título de la interfaz del mapa, incluidos controles para seleccionar datos, seleccionar un rango de fechas y opciones para la recuperación de datos personalizados.
+ Displays the title of the map interface, including controls for selecting data, selecting a date range, and options for custom data retrieval.
 
-### Componentes de manejo de datos
+### Data handling components
 - **IntervalHandler.js**:
- Gestiona comprobaciones periódicas de la cola SQS en busca de mensajes relevantes. Utiliza intervalos para llamar repetidamente a la función 'listenSqs' y manejar las respuestas, asegurando actualizaciones de datos en tiempo real.
+ Manages periodic checks for the SQS queue for relevant messages. It uses intervals to repeatedly call the 'listenSqs' function and handle the responses, ensuring real-time data updates.
 
-- **Puntos.js**:
- Maneja varias llamadas API para obtener información filtrada del backend, según criterios seleccionados por el usuario, como rangos de fechas, categorías y geografías.
+- **Points.js**:
+ Handles various API calls to fetch filtered information from the backend, based on user-selected criteria such as date ranges, categories, and geographies.
 
 - **Sqs.js**:
- Supervise los datos entrantes escuchando una cola SQS. Espera notificaciones que indiquen que datos específicos están listos para mostrarse, lo que garantiza que el usuario reciba la información más actualizada.
+ Monitor incoming data by listening to an SQS queue. It waits for notifications indicating that specific data is ready to be displayed, ensuring that the user receives the most up-to-date information.
 
-## El comienzo del trabajo.
-Para comenzar con la placa frontal GEOSHIELD:
+## The beginning of the work
+To get started with the GEOSHIELD faceplate:
 
-1. Duplica este repositorio.
-2. Navegue hasta el directorio `geoshieldmap`.
-3. Instale las dependencias ejecutando `npm install`.
-4. Inicie el servidor de desarrollo con `npm start`.
+1. Duplicate this repository.
+2. Navigate to the `geoshieldmap` directory.
+3. Install the dependencies by running `npm install`.
+4. Start the development server with `npm start`.
